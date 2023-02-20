@@ -10,7 +10,10 @@ def satisfies [inst : Model α] (t : α) (f : Form) : Prop :=
     | Form.impl f g => ∀{u : α}, satisfies u f → satisfies (t ∘ u) g
     --can't pattern match using ⊃ because of collision with set
 
+def psatisfies [inst : Model α] (p : inst.primes) (f : Form) : Prop := satisfies p.val f
+
 infix:128 "⊨"  => satisfies
+infix:128 "⊨"  => psatisfies
 
 theorem upwardsClosure [inst : Model α] {s t : α} {f : Form} (h₁: s ≤ t) (h₂ : s ⊨ f) : t ⊨ f := 
   match f with
