@@ -36,3 +36,28 @@ theorem upwardsClosure [inst : Model α] {s t : α} {f : Form} (h₁: s ≤ t) (
                           have l₁ : s ∘ u ≤ t ∘ u := inst.appMonotoneRight u h₁
                           have l₂ : (s ∘ u) ⊨ g := h₂ h₃
                           exact upwardsClosure l₁ l₂
+
+theorem starCompatRight [inst : Model α] {p : inst.primes} {f : Form} : p* ⊨ f → ¬(p ⊨ ~f) := by
+    intro h₁ h₂
+    unfold psatisfies at h₂
+    unfold satisfies at h₂
+    exact h₂ (le_refl p.val) h₁
+
+section
+
+open Classical
+
+theorem nonconstruction {α : Sort u} {p : α → Prop} (h₁ : ¬∀x : α, p x) : (∃x : α, ¬ p x) :=
+  by_contradiction λh₂ => 
+    have l₁ : ∀x : α, p x := λx : α => by_contradiction λh₃ => h₂ ⟨x, h₃⟩
+    h₁ l₁
+
+theorem starCompatLeft [inst : Model α] {p : inst.primes} {f : Form} : ¬(p ⊨ ~f) → p* ⊨ f := by
+  intros h₁
+  have ⟨x, l₁⟩ := nonconstruction h₁
+  have ⟨l₂,l₃⟩ := nonconstruction l₁
+  have l₄ := by_contradiction l₃
+  have l₅ := inst.starAntitone l₂
+  exact upwardsClosure l₅ l₄
+
+end
