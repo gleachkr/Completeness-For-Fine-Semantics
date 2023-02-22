@@ -14,7 +14,8 @@ class Model (α : Type u)
     valuation : α → Set Nat
     appMonotoneLeft : ∀x : α, Monotone (application x)
     appMonotoneRight : ∀x : α, Monotone (flip application x)
-    appBounding : ∀t u : α, ∀p : Subtype prime, application t u ≤ p → ∃q r : Subtype prime, application q u ≤ p ∧ application t r ≤ p
+    appBounding : ∀t u : α, ∀p : Subtype prime, application t u ≤ p → 
+                      ∃q r : Subtype prime, t ≤ q ∧ u ≤ r ∧ application q u ≤ p ∧ application t r ≤ p
     appLeftIdent : ∀x : α, application identity x = x
     valMonotone : ∀x y : α, x ≤ y → valuation x ⊆ valuation y
     valBounding : ∀t : α, ∀x : Nat, (∀p : Subtype prime, t ≤ p → x ∈ valuation p) → x ∈ valuation t
