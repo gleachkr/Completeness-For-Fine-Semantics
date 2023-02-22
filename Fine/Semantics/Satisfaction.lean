@@ -68,10 +68,9 @@ theorem primeDetermination [inst : Model α] {t : α} { f : Form } (h₁ : ∀p 
                           intros u h₂
                           apply primeDetermination
                           intros p h₃
-                          have ⟨q, r, h₃⟩ : ∃q r : inst.primes, t ≤ q ∧ u ≤ r ∧ (q.val ∘ u) ≤ p ∧ (t ∘ r.val) ≤ p.val := inst.appBounding t u p h₃
-
-                            
-
+                          have ⟨q, _, l₃,_,l₄,_⟩ : ∃q r : inst.primes, t ≤ q ∧ u ≤ r ∧ (↑q ∘ u) ≤ p ∧ (t ∘ r) ≤ p.val := inst.appBounding t u p h₃
+                          have l₅ : (↑q ∘ u) ⊨ g  := h₁ q l₃ h₂
+                          exact upwardsClosure l₄ l₅
 
 theorem starCompatRight [inst : Model α] {p : inst.primes} {f : Form} : p* ⊨ f → ¬(p ⊨ ~f) := by
     intro h₁ h₂
