@@ -37,6 +37,42 @@ theorem upwardsClosure [inst : Model α] {s t : α} {f : Form} (h₁: s ≤ t) (
                           have l₂ : (s ∘ u) ⊨ g := h₂ h₃
                           exact upwardsClosure l₁ l₂
 
+theorem primeDetermination [inst : Model α] {t : α} { f : Form } (h₁ : ∀p : inst.primes, t ≤ p → p ⊨ f) : t ⊨ f := 
+  match f with
+    | #n => Model.valBounding t n h₁
+    | ~f => by unfold satisfies
+               intros p h₂ h₃
+               exact h₁ p h₂ (le_refl p.val) h₃
+    | f & g => by unfold satisfies
+                  apply And.intro
+                  case left => 
+                    have l₁ : ∀p : inst.primes, t ≤ p → p ⊨ f := by
+                      intros p h₂
+                      exact (h₁ p h₂).left
+                    exact primeDetermination l₁
+                  case right =>
+                    have l₁ : ∀p : inst.primes, t ≤ p → p ⊨ g := by
+                      intros p h₂
+                      exact (h₁ p h₂).right
+                    exact primeDetermination l₁
+    | f ¦ g => by unfold satisfies
+                  intros p h₂
+                  cases h₁ p h₂ (le_refl p.val)
+                  case inl => 
+                    apply Or.inl
+                    assumption
+                  case inr => 
+                    apply Or.inr
+                    assumption
+    | Form.impl f g => by unfold satisfies
+                          intros u h₂
+                          apply primeDetermination
+                          intros p h₃
+                          have ⟨q, r, h₃⟩ : ∃q r : inst.primes, t ≤ q ∧ u ≤ r ∧ (q.val ∘ u) ≤ p ∧ (t ∘ r.val) ≤ p.val := inst.appBounding t u p h₃
+
+                            
+
+
 theorem starCompatRight [inst : Model α] {p : inst.primes} {f : Form} : p* ⊨ f → ¬(p ⊨ ~f) := by
     intro h₁ h₂
     unfold psatisfies at h₂
