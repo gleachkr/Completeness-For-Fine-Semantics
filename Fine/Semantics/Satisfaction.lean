@@ -78,6 +78,20 @@ theorem starCompatRight [inst : Model α] {p : inst.primes} {f : Form} : p* ⊨ 
     unfold satisfies at h₂
     exact h₂ (le_refl p.val) h₁
 
+theorem logicInIdentity [inst : Model α] {f g : Form} : inst.identity ⊨ f ⊃ g ↔ ∀x : α, x ⊨ f → x ⊨ g := by
+  apply Iff.intro
+  case mp => 
+    intros h₁ x h₂
+    have l₁ : (inst.identity ∘ x) ⊨ g := h₁ h₂
+    rw [←inst.appLeftIdent x]
+    assumption
+  case mpr =>
+    intro h₁
+    unfold satisfies
+    intro u h₂
+    rw [inst.appLeftIdent u]
+    exact h₁ u h₂
+
 section
 
 open Classical
