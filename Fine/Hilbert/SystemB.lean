@@ -1,6 +1,6 @@
 import Fine.PropositionalLanguage
 
-inductive BTheorem : Form → Prop
+inductive BTheorem : Form → Type
   | taut {p} : BTheorem (p ⊃ p)
   | andE₁ {p q} : BTheorem (p & q ⊃ p)
   | andE₂ {p q} : BTheorem (p & q ⊃ q)
@@ -15,9 +15,9 @@ inductive BTheorem : Form → Prop
   | cp {p q} (h₁ : BTheorem (p ⊃ ~q)) : BTheorem (q ⊃ ~p)
   | hs {p q r s} (h₁ : BTheorem (p ⊃ q)) (h₂ : BTheorem (r ⊃ s)) : BTheorem ((q ⊃ r) ⊃ (p ⊃ s))
 
-inductive BProof : Ctx → Form → Prop
+inductive BProof : Ctx → Form → Type
   | ax {Γ} {p} (h: p ∈ Γ) : BProof Γ p
-  | mp {Γ} {p} {q} (h₁ : BTheorem p) (h₂ : BProof Γ (p ⊃ q)) : BProof Γ q
+  | mp {Γ} {p} {q} (h₁ : BProof Γ p) (h₂ : BTheorem (p ⊃ q)) : BProof Γ q
   | adj {Γ} {p} {q} (h₁ : BProof Γ p) (h₂ : BProof Γ q) : BProof Γ (p & q)
 
 section
@@ -34,6 +34,14 @@ theorem BTheorem.demorgansLaw : BTheorem ((p & q) ⊃ ~(~p ¦ ~q)) :=
 
 theorem BTheorem.transitivity (h₁ : BTheorem (p ⊃ q)) (h₂ : BTheorem (q ⊃ r)) : BTheorem (p ⊃ r) :=
   mp taut (hs h₁ h₂) 
+
+theorem BTheorem.fromProof { p q : Form } : BProof {p} q → BTheorem (p ⊃ q)
+  | BProof.ax h => by rw [h]; exact taut
+  | BProof.adj h₁ h₂ => mp (adj (fromProof h₁) (fromProof h₂)) andI
+  | BProof.mp h₁ h₂ => transitivity (fromProof h₁) h₂
+
+theorem BTheorem.toProof { p q : Form } (h₁ : BTheorem (p ⊃ q)) : BProof {p} q := 
+  BProof.mp (BProof.ax rfl) h₁
 
 example : BTheorem ((p ⊃ q) ⊃ (p ⊃ (q ¦ r))) :=
   hs taut orI₁
