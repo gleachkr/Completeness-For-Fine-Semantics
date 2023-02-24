@@ -22,10 +22,7 @@ class Model (α : Type u)
     starAntitone : Antitone routeleyStar
     starInvolution: Function.Involutive routeleyStar
 
-def Model.primes [m : Model α] : Type := Subtype m.prime
-
-instance primesToSubtype [m : Model α] : Coe m.primes α where
-  coe x := x.val
+abbrev Model.primes [m : Model α] : Type := Subtype m.prime
 
 infix:256 "∘" => Model.application --overloading composition symbol here
 postfix:256 "*" => Model.routeleyStar

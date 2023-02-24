@@ -29,7 +29,7 @@ instance : ToString Form where
 #check (#1 ⊃ ~(~#2 ⊃ #3) : Form )
 #eval (#1 ⊃ ~(~#2 ⊃ #3) : Form )
 
-def Ctx : Type :=  Set Form
+abbrev Ctx := Set Form
 
 instance instMembership : Membership Form Ctx where
   mem p Γ := Γ p

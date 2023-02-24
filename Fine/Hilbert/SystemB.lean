@@ -17,7 +17,7 @@ inductive BTheorem : Form → Prop
 
 inductive BProof : Ctx → Form → Prop
   | ax {Γ} {p} (h: p ∈ Γ) : BProof Γ p
-  | mp {Γ} {p} {q} (h₁ : BTheorem (p ⊃ q)) (h₂ : BProof Γ p) : BProof Γ q
+  | mp {Γ} {p} {q} (h₁ : BTheorem p) (h₂ : BProof Γ (p ⊃ q)) : BProof Γ q
   | adj {Γ} {p} {q} (h₁ : BProof Γ p) (h₂ : BProof Γ q) : BProof Γ (p & q)
 
 section
@@ -26,11 +26,14 @@ open BTheorem
 
 variable {p q r s : Form} 
 
-theorem demorgansLawInB : BTheorem ((p & q) ⊃ ~(~p ¦ ~q)) := 
+theorem BTheorem.demorgansLaw : BTheorem ((p & q) ⊃ ~(~p ¦ ~q)) := 
   have l₁ : ∀{r : Form}, BTheorem (r ⊃ ~~r) := cp taut
   have l₂ : BTheorem (~p ⊃ ~(p & q)) := cp $ mp taut (hs andE₁ l₁)
   have l₃ : BTheorem (~q ⊃ ~(p & q)) := cp $ mp taut (hs andE₂ l₁)
   cp $ mp (adj l₂ l₃) orE
+
+theorem BTheorem.transitivity (h₁ : BTheorem (p ⊃ q)) (h₂ : BTheorem (q ⊃ r)) : BTheorem (p ⊃ r) :=
+  mp taut (hs h₁ h₂) 
 
 example : BTheorem ((p ⊃ q) ⊃ (p ⊃ (q ¦ r))) :=
   hs taut orI₁
