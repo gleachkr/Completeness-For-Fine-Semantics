@@ -36,10 +36,8 @@ theorem BProof.adjoinPremises { r : Form } : BProof {p,q} r → BProof {p & q} r
               rw [c₂]
               exact mp (ax rfl : BProof {p&q} (p&q)) andE₂
             else False.elim (Or.elim h c₁ c₂)
-  | mp h₁ h₂ => match adjoinPremises h₁ with
-      | prf => mp prf h₂
-  | adj h₁ h₂ => match adjoinPremises h₁, adjoinPremises h₂ with
-      | prf₁, prf₂ => adj prf₁ prf₂
+  | mp h₁ h₂ => mp (adjoinPremises h₁) h₂
+  | adj h₁ h₂ => adj (adjoinPremises h₁) (adjoinPremises h₂)
 
 def BTheorem.demorgansLaw : BTheorem ((p & q) ⊃ ~(~p ¦ ~q)) := 
   have l₁ : ∀{r : Form}, BTheorem (r ⊃ ~~r) := cp taut
