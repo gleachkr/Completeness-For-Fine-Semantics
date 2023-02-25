@@ -14,11 +14,13 @@ inductive BTheorem : Form → Type
   | adj {p q} (h₁ : BTheorem p) (h₂ : BTheorem q) : BTheorem (p & q)
   | cp {p q} (h₁ : BTheorem (p ⊃ ~q)) : BTheorem (q ⊃ ~p)
   | hs {p q r s} (h₁ : BTheorem (p ⊃ q)) (h₂ : BTheorem (r ⊃ s)) : BTheorem ((q ⊃ r) ⊃ (p ⊃ s))
+  deriving DecidableEq
 
 inductive BProof : Ctx → Form → Type
   | ax {Γ} {p} (h: p ∈ Γ) : BProof Γ p
   | mp {Γ} {p} {q} (h₁ : BProof Γ p) (h₂ : BTheorem (p ⊃ q)) : BProof Γ q
   | adj {Γ} {p} {q} (h₁ : BProof Γ p) (h₂ : BProof Γ q) : BProof Γ (p & q)
+  deriving DecidableEq
 
 section
 
@@ -26,21 +28,34 @@ open BTheorem
 
 variable {p q r s : Form} 
 
-theorem BTheorem.demorgansLaw : BTheorem ((p & q) ⊃ ~(~p ¦ ~q)) := 
+theorem BProof.adjoinPremises { r : Form } : BProof {p,q} r → BProof {p & q} r
+  | ax h => if c₁ : r = p then by
+              rw [c₁]
+              exact mp (ax rfl : BProof {p&q} (p&q)) andE₁
+            else if c₂ : r = q then by
+              rw [c₂]
+              exact mp (ax rfl : BProof {p&q} (p&q)) andE₂
+            else False.elim (Or.elim h c₁ c₂)
+  | mp h₁ h₂ => match adjoinPremises h₁ with
+      | prf => mp prf h₂
+  | adj h₁ h₂ => match adjoinPremises h₁, adjoinPremises h₂ with
+      | prf₁, prf₂ => adj prf₁ prf₂
+
+def BTheorem.demorgansLaw : BTheorem ((p & q) ⊃ ~(~p ¦ ~q)) := 
   have l₁ : ∀{r : Form}, BTheorem (r ⊃ ~~r) := cp taut
   have l₂ : BTheorem (~p ⊃ ~(p & q)) := cp $ mp taut (hs andE₁ l₁)
   have l₃ : BTheorem (~q ⊃ ~(p & q)) := cp $ mp taut (hs andE₂ l₁)
   cp $ mp (adj l₂ l₃) orE
 
-theorem BTheorem.transitivity (h₁ : BTheorem (p ⊃ q)) (h₂ : BTheorem (q ⊃ r)) : BTheorem (p ⊃ r) :=
+def BTheorem.transitivity (h₁ : BTheorem (p ⊃ q)) (h₂ : BTheorem (q ⊃ r)) : BTheorem (p ⊃ r) :=
   mp taut (hs h₁ h₂) 
 
-theorem BTheorem.fromProof { p q : Form } : BProof {p} q → BTheorem (p ⊃ q)
+def BTheorem.fromProof { p q : Form } : BProof {p} q → BTheorem (p ⊃ q)
   | BProof.ax h => by rw [h]; exact taut
   | BProof.adj h₁ h₂ => mp (adj (fromProof h₁) (fromProof h₂)) andI
   | BProof.mp h₁ h₂ => transitivity (fromProof h₁) h₂
 
-theorem BTheorem.toProof { p q : Form } (h₁ : BTheorem (p ⊃ q)) : BProof {p} q := 
+def BTheorem.toProof { p q : Form } (h₁ : BTheorem (p ⊃ q)) : BProof {p} q := 
   BProof.mp (BProof.ax rfl) h₁
 
 example : BTheorem ((p ⊃ q) ⊃ (p ⊃ (q ¦ r))) :=
