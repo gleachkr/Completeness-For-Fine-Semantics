@@ -6,14 +6,18 @@ def satisfies [inst : Model α] (t : α) (f : Form) : Prop :=
     | #n => n ∈ inst.valuation t
     | ~f => ∀{p : inst.primes}, t ≤ p → ¬(satisfies (p*).val f)
     | f & g => satisfies t f ∧ satisfies t g
-    | f ¦ g => ∀{p : inst.primes}, t ≤ p → satisfies (p*).val f ∨ satisfies (p*).val g
+    | f ¦ g => ∀{p : inst.primes}, t ≤ p → satisfies p.val f ∨ satisfies p.val g
     | Form.impl f g => ∀{u : α}, satisfies u f → satisfies (t ∘ u) g
     --can't pattern match using ⊃ because of collision with set
 
-def psatisfies [inst : Model α] (p : inst.primes) (f : Form) : Prop := satisfies p.val f
+abbrev psatisfies [inst : Model α] (p : inst.primes) (f : Form) : Prop := satisfies p.val f
 
-infix:128 "⊨"  => satisfies
 infix:128 "⊨"  => psatisfies
+infix:128 "⊨"  => satisfies
+
+abbrev verifies (inst : Model α) (f : Form) : Prop := inst.identity ⊨ f
+
+abbrev valid (f : Form) : Prop := ∀α : Type, ∀m : Model α, verifies m f
 
 theorem upwardsClosure [inst : Model α] {s t : α} {f : Form} (h₁: s ≤ t) (h₂ : s ⊨ f) : t ⊨ f := 
   match f with
