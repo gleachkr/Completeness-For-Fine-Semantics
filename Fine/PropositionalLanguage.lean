@@ -14,7 +14,6 @@ infixr:512 "&" => Form.and
 infixr:512 "¦" => Form.or
 prefix:max "~" => Form.neg
 
-
 instance : ToString Form where
   toString := display
   where display: Form → String

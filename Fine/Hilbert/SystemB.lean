@@ -22,6 +22,12 @@ inductive BProof : Ctx → Form → Type
   | adj {Γ} {p} {q} (h₁ : BProof Γ p) (h₂ : BProof Γ q) : BProof Γ (p & q)
   deriving DecidableEq
 
+abbrev BProvable (Γ : Ctx) (f : Form) : Prop:= ∃_: BProof Γ f, True
+
+abbrev BTheory (f : Form) : Prop := ∃_ : BTheorem f, True
+
+infix:128 "⊢" => BProvable
+
 section
 
 open BTheorem
