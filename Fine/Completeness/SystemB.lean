@@ -17,22 +17,17 @@ theorem generatedFormal : ∀Γ : Ctx, formalTheory (▲Γ) := by
    unfold formalTheory
    intros Γ f
    apply Iff.intro
-   case mp =>
-      intros h₁
-      exact ⟨BProof.ax h₁, trivial⟩
-   case mpr =>
-      intros h₁
-      cases h₁; rename_i w _; induction w
-      case intro.ax => assumption
-      case intro.mp => 
-        rename_i _ P Q _ h₂ ih
-        have ⟨prf,_⟩ := ih
-        exact ⟨BProof.mp prf h₂, trivial⟩
-      case intro.adj => 
-        rename_i ih₁ ih₂
-        have ⟨prf₁,_⟩ := ih₁
-        have ⟨prf₂,_⟩ := ih₂
-        exact ⟨BProof.adj prf₁ prf₂, trivial⟩
+   · intros h₁
+     exact ⟨BProof.ax h₁, trivial⟩
+   · intros h₁; cases h₁; rename_i w _; induction w
+     case intro.ax => assumption
+     case intro.mp _ _ _ _ h₂ ih => 
+       have ⟨prf,_⟩ := ih
+       exact ⟨BProof.mp prf h₂, trivial⟩
+     case intro.adj ih₁ ih₂ => 
+       have ⟨prf₁,_⟩ := ih₁
+       have ⟨prf₂,_⟩ := ih₂
+       exact ⟨BProof.adj prf₁ prf₂, trivial⟩
 
 def DisjunctionClosed (Γ : Ctx) := ∀f g : Form, f ∈ Γ ∧ g ∈ Γ → f ¦ g ∈ Γ
 
@@ -60,23 +55,21 @@ lemma formalFixed {Γ : Ctx} : formalTheory Γ → ▲Γ = Γ := by
   case h x =>
     ext
     apply Iff.intro
-    case a.mp => 
-      intros a
+    · intros a
       exact (h₁ x).mpr a
-    case a.mpr =>
-      intros a
+    · intros a
       exact (h₁ x).mp a
 
 lemma BisFormal : formalTheory BTheory := by
   unfold formalTheory
   intros f
   apply Iff.intro
-  case mp => intro a; exact ⟨BProof.ax a, trivial⟩
-  case mpr =>
-    intro h₁
+  · intro a
+    exact ⟨BProof.ax a, trivial⟩
+  · intro h₁
     have ⟨prf₁,_⟩ := h₁
     induction prf₁
-    case ax _ P ih => assumption
+    . assumption
     case mp _ P Q prf₁ thm₁ ih => 
       have l₁ := ih ⟨prf₁,trivial⟩
       have ⟨thm₂,_⟩ := l₁
