@@ -35,7 +35,7 @@ def systemBSoundness (prf: BTheorem f) : valid f := by
     apply primeDetermination
     intros p h₃
     rename_i P Q R
-    have ⟨q, r, _, c₁,_,c₂⟩ : ∃q r : M.primes, x ≤ q ∧ u ≤ r ∧ (↑q ∘ u) ≤ p ∧ (x ∘ r) ≤ p := M.appBounding x u p h₃
+    have ⟨_, r, _, c₁,_,c₂⟩ : ∃q r : M.primes, x ≤ q ∧ u ≤ r ∧ (↑q ∘ u) ≤ p ∧ (x ∘ r) ≤ p := M.appBounding x u p h₃
     have l₂ : r ⊨ P ∨ r ⊨ Q := h₂ c₁
     have l₃ : (x ∘ r) ⊨ R := by 
       cases l₂

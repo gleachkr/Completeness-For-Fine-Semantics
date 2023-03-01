@@ -34,7 +34,12 @@ open BTheorem
 
 variable {p q r s : Form} 
 
-theorem BProof.adjoinPremises { r : Form } : BProof {p,q} r → BProof {p & q} r
+def BProof.monotone { f : Form } { Γ : Ctx } { Δ : Ctx } (mono: Γ ⊆ Δ ) : BProof Γ f → BProof Δ f
+  | ax h₁ => ax (mono h₁)
+  | mp prf₁ thm₂ => mp (monotone mono prf₁) thm₂
+  | adj prf₁ prf₂ => adj (monotone mono prf₁) (monotone mono prf₂)
+
+def BProof.adjoinPremises { r : Form } : BProof {p,q} r → BProof {p & q} r
   | ax h => if c₁ : r = p then by
               rw [c₁]
               exact mp (ax rfl : BProof {p&q} (p&q)) andE₁
