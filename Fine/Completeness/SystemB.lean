@@ -5,7 +5,7 @@ import Fine.PropositionalLanguage
 import Mathlib.Data.Finset.Basic
 import Mathlib.Init.Set
 
-def formalTheory (Γ : Ctx) : Prop := ∀f : Form, f ∈ Γ ↔ Γ ⊢ f
+def formalTheory (Γ : Ctx) : Prop := ∀{f : Form}, f ∈ Γ ↔ Γ ⊢ f
 
 abbrev Th := { Γ : Ctx // formalTheory Γ }
 
@@ -29,9 +29,9 @@ theorem generatedFormal : ∀Γ : Ctx, formalTheory (▲Γ) := by
        have ⟨prf₂,_⟩ := ih₂
        exact ⟨BProof.adj prf₁ prf₂, trivial⟩
 
-def DisjunctionClosed (Γ : Ctx) := ∀f g : Form, f ∈ Γ ∧ g ∈ Γ → f ¦ g ∈ Γ
+def DisjunctionClosed (Γ : Ctx) := ∀{f g : Form}, f ∈ Γ ∧ g ∈ Γ → f ¦ g ∈ Γ
 
-def PrimeTheory (Γ : Ctx) := ∀f g : Form, f ¦ g ∈ Γ → f ∈ Γ ∨ g ∈ Γ
+def PrimeTheory (Γ : Ctx) := ∀{f g : Form}, f ¦ g ∈ Γ → f ∈ Γ ∨ g ∈ Γ
 
 abbrev Pr := { Γ : Th // PrimeTheory Γ }
 
@@ -53,9 +53,9 @@ lemma formalFixed {Γ : Ctx} : formalTheory Γ → ▲Γ = Γ := by
     ext
     apply Iff.intro
     · intros a
-      exact (h₁ x).mpr a
+      exact h₁.mpr a
     · intros a
-      exact (h₁ x).mp a
+      exact h₁.mp a
 
 lemma BisFormal : formalTheory BTheory := by
   unfold formalTheory
@@ -119,7 +119,7 @@ def formalApplicationFunction : Th → Th → Th
           have ⟨R, l₁⟩ := ih₁ ⟨prf,trivial⟩
           have prf₂ := BProof.ax l₁.2
           have l₃ := BProof.mp prf₂ (BTheorem.transitivityRight thm)
-          have l₄ := (h₁ (R⊃Q)).mpr ⟨l₃,trivial⟩
+          have l₄ := h₁.mpr ⟨l₃,trivial⟩
           exact ⟨R, l₁.1, l₄⟩
         case adj h₃ _ P Q prf₁ prf₂ ih₁ ih₂ =>
           unfold FormalApplication
@@ -131,7 +131,7 @@ def formalApplicationFunction : Th → Th → Th
           have l₄ : BProof Δ (R & S ⊃ Q) := BProof.mp prf₄ (BTheorem.transitivityLeft BTheorem.andE₂) 
           have l₅ : BProof Δ (R & S ⊃ P & Q) := BProof.mp (BProof.adj l₃ l₄) BTheorem.andI
           have l₆ : BProof Γ (R & S) := BProof.adj (BProof.ax l₁.1) (BProof.ax l₂.1)
-          exact ⟨R&S, (h₃ (R & S)).mpr ⟨l₆, trivial⟩, (h₁ (R & S ⊃ P & Q)).mpr ⟨l₅,trivial⟩⟩ 
+          exact ⟨R&S, h₃.mpr ⟨l₆, trivial⟩, h₁.mpr ⟨l₅,trivial⟩⟩ 
 
 def formalStarFunction : Pr → Th
   | ⟨⟨Γ, h₁⟩, h₂⟩ => by
@@ -152,9 +152,13 @@ def formalStarFunction : Pr → Th
           unfold FormalDual at l₁
           have thm₂ : BTheorem (~Q ⊃ ~P) := BTheorem.cp $ BTheorem.transitivity thm₁ (BTheorem.cp BTheorem.taut)
           have prf₂ := BProof.mp (BProof.ax h₄) thm₂
-          exact l₁ ((h₁ ~P).mpr ⟨prf₂, trivial⟩) 
+          exact l₁ (h₁.mpr ⟨prf₂, trivial⟩) 
         case adj _ P Q prf₁ prf₂ ih₁ ih₂ =>
           intros h₄
           have l₁ := ih₁ ⟨prf₁,trivial⟩
           have l₂ := ih₂ ⟨prf₂,trivial⟩
           have prf₃ := BProof.mp (BProof.ax h₄) BTheorem.demorgansLaw3
+          have l₃ := h₂ (h₁.mpr ⟨prf₃, trivial⟩)
+          cases l₃
+          case inl left => exact l₁ left
+          case inr right => exact l₂ right
