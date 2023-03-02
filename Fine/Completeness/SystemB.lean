@@ -35,9 +35,6 @@ def PrimeTheory (Γ : Ctx) := ∀f g : Form, f ¦ g ∈ Γ → f ∈ Γ ∨ g �
 
 abbrev Pr := { Γ : Th // PrimeTheory Γ }
 
-def FormalApplication (Γ : Ctx) (Δ : Ctx) : Ctx := 
-  λf : Form => ∃g : Form, g ∈ Δ ∧ (g ⊃ f) ∈ Γ
-
 def FormalDual (Γ : Ctx) : Ctx := 
   λf : Form => ¬(~f ∈ Γ)
 
@@ -101,6 +98,39 @@ theorem BProof.compactness { Γ : Ctx } { f : Form } : BProof Γ f → Σs : Fin
     rw [←Finset.coe_union] at prf₅
     exact ⟨↑(fin₁ ∪ fin₂), prf₅⟩
 
-def formalApplicationFunction : Th → Th → Th := sorry
+def FormalApplication (Γ : Ctx) (Δ : Ctx) : Ctx := λf : Form => ∃g : Form, g ∈ Δ ∧ (g ⊃ f) ∈ Γ
+  
+def formalApplicationFunction : Th → Th → Th
+  | ⟨Δ, h₁⟩, ⟨Γ, h₂⟩ => by
+    unfold Th; unfold formalTheory
+    apply Subtype.mk
+    case val => exact FormalApplication Δ Γ
+    case property =>
+      intros f
+      apply Iff.intro
+      intros h₁
+      case mp => exact ⟨BProof.ax h₁, trivial⟩
+      case mpr =>
+        intros h₂
+        have ⟨prf,_⟩ := h₂
+        induction prf
+        case ax => assumption
+        case mp _ _ P Q prf thm ih₁ =>
+          have ⟨R, l₁⟩ := ih₁ ⟨prf,trivial⟩
+          have prf₂ := BProof.ax l₁.2
+          have l₃ := BProof.mp prf₂ (BTheorem.transitivityRight thm)
+          have l₄ := (h₁ (R⊃Q)).mpr ⟨l₃,trivial⟩
+          exact ⟨R, l₁.1, l₄⟩
+        case adj h₃ _ P Q prf₁ prf₂ ih₁ ih₂ =>
+          unfold FormalApplication
+          have ⟨R, l₁⟩ := ih₁ ⟨prf₁,trivial⟩
+          have prf₃ := BProof.ax l₁.2
+          have ⟨S, l₂⟩ := ih₂ ⟨prf₂,trivial⟩
+          have prf₄ := BProof.ax l₂.2
+          have l₃ : BProof Δ (R & S ⊃ P) := BProof.mp prf₃ (BTheorem.transitivityLeft BTheorem.andE₁) 
+          have l₄ : BProof Δ (R & S ⊃ Q) := BProof.mp prf₄ (BTheorem.transitivityLeft BTheorem.andE₂) 
+          have l₅ : BProof Δ (R & S ⊃ P & Q) := BProof.mp (BProof.adj l₃ l₄) BTheorem.andI
+          have l₆ : BProof Γ (R & S) := BProof.adj (BProof.ax l₁.1) (BProof.ax l₂.1)
+          exact ⟨R&S, (h₃ (R & S)).mpr ⟨l₆, trivial⟩, (h₁ (R & S ⊃ P & Q)).mpr ⟨l₅,trivial⟩⟩ 
 
 def formalStarFunction : Pr → Pr := sorry

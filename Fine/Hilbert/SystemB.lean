@@ -59,6 +59,12 @@ def BTheorem.demorgansLaw : BTheorem ((p & q) ⊃ ~(~p ¦ ~q)) :=
 def BTheorem.transitivity (h₁ : BTheorem (p ⊃ q)) (h₂ : BTheorem (q ⊃ r)) : BTheorem (p ⊃ r) :=
   mp taut (hs h₁ h₂) 
 
+def BTheorem.transitivityLeft (h : BTheorem (p ⊃ q)) : BTheorem ((q ⊃ r) ⊃ (p ⊃ r)) :=
+  hs h taut
+  
+def BTheorem.transitivityRight (h : BTheorem (p ⊃ q)) : BTheorem ((r ⊃ p) ⊃ (r ⊃ q)) :=
+  hs taut h
+
 def BTheorem.fromProof { p q : Form } : BProof {p} q → BTheorem (p ⊃ q)
   | BProof.ax h => by rw [h]; exact taut
   | BProof.adj h₁ h₂ => mp (adj (fromProof h₁) (fromProof h₂)) andI
