@@ -133,4 +133,28 @@ def formalApplicationFunction : Th → Th → Th
           have l₆ : BProof Γ (R & S) := BProof.adj (BProof.ax l₁.1) (BProof.ax l₂.1)
           exact ⟨R&S, (h₃ (R & S)).mpr ⟨l₆, trivial⟩, (h₁ (R & S ⊃ P & Q)).mpr ⟨l₅,trivial⟩⟩ 
 
-def formalStarFunction : Pr → Pr := sorry
+def formalStarFunction : Pr → Th
+  | ⟨⟨Γ, h₁⟩, h₂⟩ => by
+    unfold Th; unfold formalTheory
+    apply Subtype.mk
+    case val => exact FormalDual Γ
+    case property => 
+      intros F
+      apply Iff.intro <;> intros h₃ <;> unfold FormalDual
+      case mp => exact ⟨BProof.ax h₃,trivial⟩
+      case mpr =>
+        have ⟨prf₁,_⟩ := h₃
+        induction prf₁
+        case ax => assumption
+        case mp _ P Q prf₂ thm₁ ih₁ =>
+          intros h₄
+          have l₁ := ih₁ ⟨prf₂,trivial⟩
+          unfold FormalDual at l₁
+          have thm₂ : BTheorem (~Q ⊃ ~P) := BTheorem.cp $ BTheorem.transitivity thm₁ (BTheorem.cp BTheorem.taut)
+          have prf₂ := BProof.mp (BProof.ax h₄) thm₂
+          exact l₁ ((h₁ ~P).mpr ⟨prf₂, trivial⟩) 
+        case adj _ P Q prf₁ prf₂ ih₁ ih₂ =>
+          intros h₄
+          have l₁ := ih₁ ⟨prf₁,trivial⟩
+          have l₂ := ih₂ ⟨prf₂,trivial⟩
+          have prf₃ := BProof.mp (BProof.ax h₄) BTheorem.demorgansLaw3
