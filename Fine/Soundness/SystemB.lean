@@ -60,13 +60,11 @@ def systemBSoundness (prf: BTheorem f) : valid f := by
     have ⟨l₁,l₂⟩ := h₁
     unfold satisfies at l₂
     cases l₂ h₂
-    case inl => 
-      rename_i _ _ _ h₃
+    case inl h₃ => 
       apply Or.inl
       unfold satisfies
       exact ⟨upwardsClosure h₂ l₁, h₃⟩
-    case inr => 
-      rename_i _ _ _ h₃
+    case inr h₃ => 
       apply Or.inr
       unfold satisfies
       exact ⟨upwardsClosure h₂ l₁, h₃⟩
@@ -81,7 +79,7 @@ def systemBSoundness (prf: BTheorem f) : valid f := by
     rw [←M.appLeftIdent M.identity]
     assumption
   case cp thm₁ => 
-    rename_i P Q R
+    rename_i P Q _
     apply primeDetermination
     apply by_contradiction
     intros h₂
@@ -97,7 +95,6 @@ def systemBSoundness (prf: BTheorem f) : valid f := by
     rw [M.starInvolution q] at l₈
     exact l₈ $ upwardsClosure l₃ h₁
   case hs thm₁ thm₂ => 
-    rename_i P Q R S
     unfold satisfies
     intros u h₂
     have l₁ := (thm₁ α M) h₂
