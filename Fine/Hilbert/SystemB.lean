@@ -50,12 +50,6 @@ def BProof.adjoinPremises { r : Form } : BProof {p,q} r → BProof {p & q} r
   | mp h₁ h₂ => mp (adjoinPremises h₁) h₂
   | adj h₁ h₂ => adj (adjoinPremises h₁) (adjoinPremises h₂)
 
-def BTheorem.demorgansLaw1 : BTheorem ((p & q) ⊃ ~(~p ¦ ~q)) := 
-  have l₁ : ∀{r : Form}, BTheorem (r ⊃ ~~r) := cp taut
-  have l₂ : BTheorem (~p ⊃ ~(p & q)) := cp $ mp taut (hs andE₁ l₁)
-  have l₃ : BTheorem (~q ⊃ ~(p & q)) := cp $ mp taut (hs andE₂ l₁)
-  cp $ mp (adj l₂ l₃) orE
-
 def BTheorem.transitivity (h₁ : BTheorem (p ⊃ q)) (h₂ : BTheorem (q ⊃ r)) : BTheorem (p ⊃ r) :=
   mp taut (hs h₁ h₂) 
 
@@ -64,6 +58,12 @@ def BTheorem.transitivityLeft (h : BTheorem (p ⊃ q)) : BTheorem ((q ⊃ r) ⊃
   
 def BTheorem.transitivityRight (h : BTheorem (p ⊃ q)) : BTheorem ((r ⊃ p) ⊃ (r ⊃ q)) :=
   hs taut h
+
+def BTheorem.demorgansLaw1 : BTheorem ((p & q) ⊃ ~(~p ¦ ~q)) := 
+  have l₁ : ∀{r : Form}, BTheorem (r ⊃ ~~r) := cp taut
+  have l₂ : BTheorem (~p ⊃ ~(p & q)) := cp $ mp taut (hs andE₁ l₁)
+  have l₃ : BTheorem (~q ⊃ ~(p & q)) := cp $ mp taut (hs andE₂ l₁)
+  cp $ mp (adj l₂ l₃) orE
 
 def BTheorem.demorgansLaw2 : BTheorem (~(~p ¦ ~q) ⊃ (p & q)) := 
   have l₁ : BTheorem (~p ⊃ ~~(~p ¦ ~q)) := transitivity orI₁ (cp taut)
@@ -75,6 +75,11 @@ def BTheorem.demorgansLaw2 : BTheorem (~(~p ¦ ~q) ⊃ (p & q)) :=
 def BTheorem.demorgansLaw3 : BTheorem (~(p & q) ⊃ (~p ¦ ~q)) := 
   have l₁ : BTheorem (~(~p ¦ ~q) ⊃ ~~(p & q)):= transitivity demorgansLaw2 (cp taut)
   transitivity (cp l₁) dne
+
+def BTheorem.demorgansLaw4 : BTheorem ((~p & ~q) ⊃ ~(p ¦ q)) := 
+  have l₁ : BTheorem (p ⊃ ~(~p & ~q)) := cp andE₁
+  have l₂ : BTheorem (q ⊃ ~(~p & ~q)) := cp andE₂
+  cp (mp (adj l₁ l₂) orE)
 
 def BTheorem.fromProof { p q : Form } : BProof {p} q → BTheorem (p ⊃ q)
   | BProof.ax h => by rw [h]; exact taut
