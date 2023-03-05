@@ -33,5 +33,3 @@ lemma finiteExhaustion [inst: DecidableEq α] {fam : Nat → Set α} {fin : Fins
         cases Finset.mem_insert.mp h₄
         case inl h₅ => rw [h₅]; assumption
         case inr h₅ => exact l₅ h₅
-
-        
