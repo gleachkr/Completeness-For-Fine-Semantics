@@ -1,5 +1,6 @@
 import Mathlib.Init.Set
 import Mathlib.Logic.Denumerable
+import Mathlib.Data.Finite.Defs
 
 inductive Form : Type
   | atom : Nat → Form
@@ -17,14 +18,19 @@ prefix:max "~" => Form.neg
 
 abbrev tupleEquiv := Nat⊕ Nat⊕ (Nat × Nat)⊕ (Nat × Nat)⊕ (Nat×Nat)
 
-def toSumEncoding : Form → Nat⊕ Nat⊕ (Nat × Nat)⊕ (Nat × Nat)⊕ (Nat×Nat)
+def Form.toSumEncoding : Form → Nat⊕ Nat⊕ (Nat × Nat)⊕ (Nat × Nat)⊕ (Nat×Nat)
     | #n => Sum.inl n
     | ~f => Sum.inr $ Sum.inl (Encodable.encode $ toSumEncoding f)
     | f & g => Sum.inr $ Sum.inr $ Sum.inl ⟨Encodable.encode $ toSumEncoding f, Encodable.encode $ toSumEncoding g⟩
     | f ¦ g => Sum.inr $ Sum.inr $ Sum.inr $ Sum.inl ⟨Encodable.encode $ toSumEncoding f, Encodable.encode $ toSumEncoding g⟩
     | Form.impl f g => Sum.inr $ Sum.inr $ Sum.inr $ Sum.inr ⟨Encodable.encode $ toSumEncoding f, Encodable.encode $ toSumEncoding g⟩
 
-theorem sum_encoding_injection : Function.Injective toSumEncoding := by
+theorem Form.nat_injection : Function.Injective Form.atom := by
+  unfold Function.Injective;
+  intros n m h₁
+  injection h₁
+
+theorem Form.sum_encoding_injective : Function.Injective toSumEncoding := by
   unfold Function.Injective
   intros P
   induction P
@@ -92,6 +98,20 @@ theorem sum_encoding_injection : Function.Injective toSumEncoding := by
       unfold toSumEncoding at h₁
       repeat (injection h₁ with h₁)
       injection h₁
+
+instance : Countable Form where
+  exists_injective_nat' := 
+    ⟨ Encodable.encode ∘ Form.toSumEncoding
+    , Function.Injective.comp Encodable.encode_injective Form.sum_encoding_injective
+    ⟩
+
+instance Form.infinite : Infinite Form := 
+  Infinite.of_injective Form.atom Form.nat_injection
+
+--Sure would be nice to have this explicitly
+noncomputable instance : Encodable Form := Encodable.ofCountable Form
+
+noncomputable instance : Denumerable Form := Denumerable.ofEncodableOfInfinite Form
     
 instance : ToString Form where
   toString := display
@@ -102,7 +122,6 @@ instance : ToString Form where
     | f1 ¦ f2 => "(" ++ display f1 ++ "¦" ++ display f2 ++ ")"
     | Form.impl f1 f2 => "(" ++ display f1 ++ " ⊃ " ++ display f2 ++ ")" 
     --can't pattern match using ⊃ because of collision with set
-
 
 #check (#1 ⊃ ~(~#2 ⊃ #3) : Form )
 #eval (#1 ⊃ ~(~#2 ⊃ #3) : Form )
