@@ -16,102 +16,102 @@ infixr:512 "&" => Form.and
 infixr:512 "¦" => Form.or
 prefix:max "~" => Form.neg
 
-abbrev tupleEquiv := Nat⊕ Nat⊕ (Nat × Nat)⊕ (Nat × Nat)⊕ (Nat×Nat)
+inductive ConsExp : Type
+  | nat : Nat → ConsExp
+  | cons : ConsExp → ConsExp → ConsExp
 
-def Form.toSumEncoding : Form → Nat⊕ Nat⊕ (Nat × Nat)⊕ (Nat × Nat)⊕ (Nat×Nat)
-    | #n => Sum.inl n
-    | ~f => Sum.inr $ Sum.inl (Encodable.encode $ toSumEncoding f)
-    | f & g => Sum.inr $ Sum.inr $ Sum.inl ⟨Encodable.encode $ toSumEncoding f, Encodable.encode $ toSumEncoding g⟩
-    | f ¦ g => Sum.inr $ Sum.inr $ Sum.inr $ Sum.inl ⟨Encodable.encode $ toSumEncoding f, Encodable.encode $ toSumEncoding g⟩
-    | Form.impl f g => Sum.inr $ Sum.inr $ Sum.inr $ Sum.inr ⟨Encodable.encode $ toSumEncoding f, Encodable.encode $ toSumEncoding g⟩
+def ConsExp.encode : ConsExp → Nat
+  | nat n => 2 * n
+  | cons f g => 2 * Nat.mkpair f.encode g.encode + 1
 
-theorem Form.nat_injection : Function.Injective Form.atom := by
-  unfold Function.Injective;
-  intros n m h₁
-  injection h₁
+def ConsExp.decode (n : ℕ) : ConsExp :=
+  match hn : Nat.boddDiv2 n with
+  | (false, m) => nat m
+  | (true, m) =>
+    match hm : Nat.unpair m with
+    | (f, g) =>
+      -- Some proofs to show termination:
+      have hn' : 1 ≤ n := by
+        cases n
+        · simp at hn
+        · simp [Nat.succ_eq_add_one]
+      have : m < n := by
+        have := congr_arg Prod.snd hn
+        simp at this
+        cases this
+        apply Nat.binaryRec_decreasing
+        rwa [Nat.one_le_iff_ne_zero] at hn'
+      have : f < n := by
+        apply Nat.lt_of_le_of_lt _ this
+        have := congr_arg Prod.fst hm
+        simp at this
+        cases this
+        cases m
+        · simp
+        next m =>
+          apply (Nat.unpair_lt _).le
+          simp [Nat.succ_eq_add_one]
+      have : g < n := by
+        have := congr_arg Prod.snd hm
+        simp at this
+        cases this
+        have := Nat.unpair_right_le m
+        apply Nat.lt_of_le_of_lt this
+        assumption
+      -- With those out of the way:
+      cons (decode f) (decode g)
+termination_by _ => n
 
-theorem Form.sum_encoding_injective : Function.Injective toSumEncoding := by
-  unfold Function.Injective
-  intros P
-  induction P
-  case atom n =>
-    intros Q h₁
-    cases Q
-    · unfold toSumEncoding at h₁
-      injection h₁ with h₁
-      rw [h₁]
-    repeat (unfold toSumEncoding at h₁; injection h₁)
-  case neg Q ih =>
-    intros R h
-    cases R
-    case neg S =>
-      unfold toSumEncoding at h
-      repeat (injection h with h)
-      have l := ih (Encodable.encode_injective h)
-      simp [l]
-    repeat
-      unfold toSumEncoding at h
-      repeat (injection h with h)
-      injection h
-  case and =>
-    rename_i R S ih₁ ih₂
-    intros T h₁
-    cases T
-    case and U V =>
-      unfold toSumEncoding at h₁
-      repeat (injection h₁ with h₁)
-      rename_i h₂
-      have l₁ := ih₁ (Encodable.encode_injective h₁)
-      have l₂ := ih₂ (Encodable.encode_injective h₂)
-      simp [l₁,l₂]
-    repeat
-      unfold toSumEncoding at h₁
-      repeat (injection h₁ with h₁)
-      injection h₁
-  case or =>
-    rename_i R S ih₁ ih₂
-    intros T h₁
-    cases T
-    case or U V =>
-      unfold toSumEncoding at h₁
-      repeat (injection h₁ with h₁)
-      rename_i h₂
-      have l₁ := ih₁ (Encodable.encode_injective h₁)
-      have l₂ := ih₂ (Encodable.encode_injective h₂)
-      simp [l₁,l₂]
-    repeat
-      unfold toSumEncoding at h₁
-      repeat (injection h₁ with h₁)
-      injection h₁
-  case impl => 
-    rename_i R S ih₁ ih₂
-    intros T h₁
-    cases T
-    case impl U V =>
-      unfold toSumEncoding at h₁
-      repeat (injection h₁ with h₁)
-      rename_i h₂
-      have l₁ := ih₁ (Encodable.encode_injective h₁)
-      have l₂ := ih₂ (Encodable.encode_injective h₂)
-      simp [l₁,l₂]
-    repeat
-      unfold toSumEncoding at h₁
-      repeat (injection h₁ with h₁)
-      injection h₁
+theorem ConsExp.decode_encode (c : ConsExp) : ConsExp.decode c.encode = c := by
+  induction c
+  · rw [encode, decode]
+    split
+    next h =>
+      simp [Nat.div2_val] at h
+      simp [*]
+    next h => simp at h
+  next hf hg =>
+    rw [encode, decode]
+    split
+    next h => simp at h
+    next h =>
+      simp [Nat.div2_val] at h
+      cases h
+      simp [*]
 
-instance : Countable Form where
-  exists_injective_nat' := 
-    ⟨ Encodable.encode ∘ Form.toSumEncoding
-    , Function.Injective.comp Encodable.encode_injective Form.sum_encoding_injective
-    ⟩
+instance : Encodable ConsExp where
+  encode := ConsExp.encode
+  decode := fun v => some (ConsExp.decode v)
+  encodek := fun a => by simp [ConsExp.decode_encode]
 
-instance Form.infinite : Infinite Form := 
-  Infinite.of_injective Form.atom Form.nat_injection
+def Form.toConsExp : Form → ConsExp
+  | atom n => .cons (.nat 0) (.nat n)
+  | neg f => .cons (.nat 1) f.toConsExp
+  | and f g => .cons (.nat 2) (.cons f.toConsExp g.toConsExp)
+  | or f g => .cons (.nat 3) (.cons f.toConsExp g.toConsExp)
+  | impl f g => .cons (.nat 4) (.cons f.toConsExp g.toConsExp)
 
---Sure would be nice to have this explicitly
-noncomputable instance : Encodable Form := Encodable.ofCountable Form
+theorem Form.toConsExp_injective : Function.Injective Form.toConsExp := by
+  intros f1 f2
+  induction f1 generalizing f2 <;> cases f2 <;> simp! <;> aesop
 
-noncomputable instance : Denumerable Form := Denumerable.ofEncodableOfInfinite Form
+def ConsExp.toForm : ConsExp → Option Form
+  | .cons (.nat 0) (.nat n) => .some (.atom n)
+  | .cons (.nat 1) f => .neg <$> f.toForm
+  | .cons (.nat 2) (.cons f g) => .and <$> f.toForm <*> g.toForm
+  | .cons (.nat 3) (.cons f g) => .or <$> f.toForm <*> g.toForm
+  | .cons (.nat 4) (.cons f g) => .impl <$> f.toForm <*> g.toForm
+  | _ => .none
+
+theorem toForm_toConsExp_eq (f : Form) : f.toConsExp.toForm = some f := by
+  induction f <;> simp! [*]
+
+instance : Encodable Form where
+  encode f := Encodable.encode f.toConsExp
+  decode n := Option.bind (Encodable.decode n) ConsExp.toForm 
+  encodek := by
+    intro f
+    simp [toForm_toConsExp_eq]
     
 instance : ToString Form where
   toString := display
