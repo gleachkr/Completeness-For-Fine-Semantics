@@ -7,7 +7,7 @@ def satisfies [inst : Model α] (t : α) (f : Form) : Prop :=
     | ~f => ∀{p : inst.primes}, t ≤ p → ¬(satisfies (p*).val f)
     | f & g => satisfies t f ∧ satisfies t g
     | f ¦ g => ∀{p : inst.primes}, t ≤ p → satisfies p.val f ∨ satisfies p.val g
-    | Form.impl f g => ∀{u : α}, satisfies u f → satisfies (t ∘ u) g
+    | Form.impl f g => ∀{u : α}, satisfies u f → satisfies (t ∙ u) g
     --can't pattern match using ⊃ because of collision with set
 
 abbrev psatisfies [inst : Model α] (p : inst.primes) (f : Form) : Prop := satisfies p.val f
@@ -37,8 +37,8 @@ theorem upwardsClosure [inst : Model α] {s t : α} {f : Form} (h₁: s ≤ t) (
                   case right => intro h₄; exact Or.inr h₄
     | Form.impl f g => by unfold satisfies
                           intros u h₃
-                          have l₁ : s ∘ u ≤ t ∘ u := inst.appMonotoneRight u h₁
-                          have l₂ : (s ∘ u) ⊨ g := h₂ h₃
+                          have l₁ : s ∙ u ≤ t ∙ u := inst.appMonotoneRight u h₁
+                          have l₂ : (s ∙ u) ⊨ g := h₂ h₃
                           exact upwardsClosure l₁ l₂
 
 theorem primeDetermination [inst : Model α] {t : α} { f : Form } (h₁ : ∀p : inst.primes, t ≤ p → p ⊨ f) : t ⊨ f := 
@@ -72,8 +72,8 @@ theorem primeDetermination [inst : Model α] {t : α} { f : Form } (h₁ : ∀p 
                           intros u h₂
                           apply primeDetermination
                           intros p h₃
-                          have ⟨q, _, l₃,_,l₄,_⟩ : ∃q r : inst.primes, t ≤ q ∧ u ≤ r ∧ (↑q ∘ u) ≤ p ∧ (t ∘ r) ≤ p.val := inst.appBounding t u p h₃
-                          have l₅ : (↑q ∘ u) ⊨ g  := h₁ q l₃ h₂
+                          have ⟨q, _, l₃,_,l₄,_⟩ : ∃q r : inst.primes, t ≤ q ∧ u ≤ r ∧ (↑q ∙ u) ≤ p ∧ (t ∙ r) ≤ p.val := inst.appBounding t u p h₃
+                          have l₅ : (↑q ∙ u) ⊨ g  := h₁ q l₃ h₂
                           exact upwardsClosure l₄ l₅
 
 theorem starCompatRight [inst : Model α] {p : inst.primes} {f : Form} : p* ⊨ f → ¬(p ⊨ ~f) := by
@@ -86,7 +86,7 @@ theorem logicInIdentity [inst : Model α] {f g : Form} : inst.identity ⊨ f ⊃
   apply Iff.intro
   case mp => 
     intros h₁ x h₂
-    have l₁ : (inst.identity ∘ x) ⊨ g := h₁ h₂
+    have l₁ : (inst.identity ∙ x) ⊨ g := h₁ h₂
     rw [←inst.appLeftIdent x]
     assumption
   case mpr =>
@@ -101,15 +101,15 @@ section
 open Classical
 
 theorem nonconstruction {α : Sort u} {p : α → Prop} (h₁ : ¬∀x : α, p x) : (∃x : α, ¬ p x) :=
-  by_contradiction λh₂ => 
-    have l₁ : ∀x : α, p x := λx : α => by_contradiction λh₃ => h₂ ⟨x, h₃⟩
+  byContradiction λh₂ => 
+    have l₁ : ∀x : α, p x := λx : α => byContradiction λh₃ => h₂ ⟨x, h₃⟩
     h₁ l₁
 
 theorem starCompatLeft [inst : Model α] {p : inst.primes} {f : Form} : ¬(p ⊨ ~f) → p* ⊨ f := by
   intros h₁
   have ⟨x, l₁⟩ := nonconstruction h₁
   have ⟨l₂,l₃⟩ := nonconstruction l₁
-  have l₄ := by_contradiction l₃
+  have l₄ := byContradiction l₃
   have l₅ := inst.starAntitone l₂
   exact upwardsClosure l₅ l₄
 

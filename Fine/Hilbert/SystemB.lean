@@ -14,13 +14,11 @@ inductive BTheorem : Form → Type
   | adj {p q} (h₁ : BTheorem p) (h₂ : BTheorem q) : BTheorem (p & q)
   | cp {p q} (h₁ : BTheorem (p ⊃ ~q)) : BTheorem (q ⊃ ~p)
   | hs {p q r s} (h₁ : BTheorem (p ⊃ q)) (h₂ : BTheorem (r ⊃ s)) : BTheorem ((q ⊃ r) ⊃ (p ⊃ s))
-  deriving DecidableEq
 
 inductive BProof : Ctx → Form → Type
   | ax {Γ} {p} (h: p ∈ Γ) : BProof Γ p
   | mp {Γ} {p} {q} (h₁ : BProof Γ p) (h₂ : BTheorem (p ⊃ q)) : BProof Γ q
   | adj {Γ} {p} {q} (h₁ : BProof Γ p) (h₂ : BProof Γ q) : BProof Γ (p & q)
-  deriving DecidableEq
 
 abbrev BProvable (Γ : Ctx) (f : Form) : Prop:= Nonempty (BProof Γ f)
 

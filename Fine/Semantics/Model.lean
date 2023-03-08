@@ -24,5 +24,5 @@ class Model (α : Type u)
 
 abbrev Model.primes [m : Model α] : Type := Subtype m.prime
 
-infix:256 "∘" => Model.application --overloading composition symbol here
+infix:256 "∙" => Model.application
 postfix:256 "*" => Model.routeleyStar

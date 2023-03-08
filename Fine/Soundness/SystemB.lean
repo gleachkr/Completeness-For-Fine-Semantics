@@ -35,9 +35,9 @@ def systemBSoundness (prf: BTheorem f) : valid f := by
     apply primeDetermination
     intros p h₃
     rename_i P Q R
-    have ⟨_, r, _, c₁,_,c₂⟩ : ∃q r : M.primes, x ≤ q ∧ u ≤ r ∧ (↑q ∘ u) ≤ p ∧ (x ∘ r) ≤ p := M.appBounding x u p h₃
+    have ⟨_, r, _, c₁,_,c₂⟩ : ∃q r : M.primes, x ≤ q ∧ u ≤ r ∧ (↑q ∙ u) ≤ p ∧ (x ∙ r) ≤ p := M.appBounding x u p h₃
     have l₂ : r ⊨ P ∨ r ⊨ Q := h₂ c₁
-    have l₃ : (x ∘ r) ⊨ R := by 
+    have l₃ : (x ∙ r) ⊨ R := by 
       cases l₂
       case inl => rename_i h₄; exact h₁.1 h₄
       case inr => rename_i h₄; exact h₁.2 h₄
@@ -52,7 +52,7 @@ def systemBSoundness (prf: BTheorem f) : valid f := by
     have ⟨l₂, l₃⟩ := nonconstruction l₁
     have l₄ := M.starAntitone l₂
     rw [M.starInvolution] at l₄
-    exact upwardsClosure l₄ (by_contradiction l₃)
+    exact upwardsClosure l₄ (byContradiction l₃)
   case dist => 
     unfold satisfies
     intros p h₂
@@ -81,13 +81,13 @@ def systemBSoundness (prf: BTheorem f) : valid f := by
   case cp thm₁ => 
     rename_i P Q _
     apply primeDetermination
-    apply by_contradiction
+    apply byContradiction
     intros h₂
     have ⟨q, l₂⟩ := nonconstruction h₂
     have ⟨l₃, l₄⟩ := nonconstruction l₂
     have l₅ := starCompatLeft l₄
     have l₆ : M.identity ⊨ P ⊃ ~Q:= thm₁ α M
-    have l₇ : (M.identity ∘ (q*).val) ⊨ ~Q := l₆ l₅
+    have l₇ : (M.identity ∙ (q*).val) ⊨ ~Q := l₆ l₅
     unfold satisfies at l₇
     have l₈ : ¬(q** ⊨ Q) := by
       rw [M.appLeftIdent (q*).val] at l₇
@@ -100,5 +100,5 @@ def systemBSoundness (prf: BTheorem f) : valid f := by
     have l₁ := (thm₁ α M) h₂
     rw [M.appLeftIdent u] at l₁
     have l₂ := (thm₂ α M) (h₁ l₁)
-    rw [M.appLeftIdent (x ∘ u)] at l₂
+    rw [M.appLeftIdent (x ∙ u)] at l₂
     assumption
