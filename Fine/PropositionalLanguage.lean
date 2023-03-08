@@ -40,6 +40,15 @@ def ConsExp.toForm : ConsExp → Option Form
   | .cons (.nat 4) (.cons f g) => .impl <$> f.toForm <*> g.toForm
   | _ => .none
 
+instance {f : Form} : Decidable (∃g h, f = g ¦ h) := by
+  cases f
+  case or f₁ f₂ => exact isTrue ⟨f₁, f₂, rfl⟩
+  repeat
+    apply isFalse
+    intros h₁
+    have ⟨g, h, h₂⟩ := h₁
+    injection h₂
+
 theorem toForm_toConsExp_eq (f : Form) : f.toConsExp.toForm = some f := by
   induction f <;> simp! [*]
 
@@ -54,6 +63,19 @@ instance : Encodable Form where
     simp [toForm_toConsExp_eq]
 
 instance : Denumerable Form := Denumerable.ofEncodableOfInfinite Form
+
+instance Form.disjunctions_encodable : Encodable {f : Form // ∃g h : Form, f = g ¦ h} := Encodable.Subtype.encodable
+
+instance Form.disjunctions_infinite : Infinite {f : Form // ∃g h : Form, f = g ¦ h} := by
+  apply Infinite.of_injective (λn : Nat => ⟨#n ¦ #n, ⟨#n, #n, rfl⟩⟩)
+  unfold Function.Injective
+  intros n₁ n₂ h₁
+  injection h₁ with h₁
+  injection h₁ with h₁ h₂
+  injection h₁
+
+instance : Denumerable {f : Form // ∃g h : Form, f = g ¦ h} := 
+  Denumerable.ofEncodableOfInfinite {f : Form // ∃g h : Form, f = g ¦ h}
     
 instance : ToString Form where
   toString := display
