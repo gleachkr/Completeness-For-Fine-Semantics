@@ -2,8 +2,6 @@ import Fine.Semantics.Model
 import Fine.Semantics.Satisfaction
 import Fine.Hilbert.SystemB
 import Fine.PropositionalLanguage
-import Mathlib.Data.Finset.Basic
-import Mathlib.Init.Set
 
 def formalTheory (Γ : Ctx) : Prop := ∀{f : Form}, f ∈ Γ ↔ Γ ⊢ f
 
@@ -75,28 +73,6 @@ lemma BisFormal : formalTheory BTheory := by
       have ⟨l₁⟩ := ih₁ ⟨prf₁⟩
       have ⟨l₂⟩ := ih₂ ⟨prf₂⟩
       exact ⟨BTheorem.adj l₁ l₂⟩
-
-theorem BProof.compactness { Γ : Ctx } { f : Form } : BProof Γ f → Σs : Finset Form, BProof ↑s f := by
-  intros prf₁; induction prf₁
-  case ax g _ => 
-    have l₁ : g ∈ {g} := Finset.mem_singleton.mpr rfl
-    have l₂ : ({g} : Finset Form) = ({g} : Ctx) := Finset.coe_singleton g
-    have prf₂ : BProof ↑{g} g := by
-      rw [←l₂]
-      apply ax l₁
-    rw [←l₂] at prf₂
-    exact ⟨↑{g}, prf₂⟩
-  case mp P Q _ h₂ ih => 
-    have ⟨fin, prf⟩ := ih
-    exact ⟨fin, mp prf h₂⟩
-  case adj P Q _ _ ih₁ ih₂ => 
-    have ⟨fin₁, prf₁⟩ := ih₁
-    have ⟨fin₂, prf₂⟩ := ih₂
-    have prf₃ : BProof (↑fin₁ ∪ ↑fin₂) P := BProof.monotone (Set.subset_union_left ↑fin₁ ↑fin₂) prf₁
-    have prf₄ : BProof (↑fin₁ ∪ ↑fin₂) Q := BProof.monotone (Set.subset_union_right ↑fin₁ ↑fin₂) prf₂
-    have prf₅ := adj prf₃ prf₄
-    rw [←Finset.coe_union] at prf₅
-    exact ⟨↑(fin₁ ∪ fin₂), prf₅⟩
 
 def FormalApplication (Γ : Ctx) (Δ : Ctx) : Ctx := λf : Form => ∃g : Form, g ∈ Δ ∧ (g ⊃ f) ∈ Γ
   

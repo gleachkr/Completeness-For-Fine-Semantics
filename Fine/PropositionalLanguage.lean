@@ -74,6 +74,7 @@ instance Form.disjunctions_infinite : Infinite {f : Form // ∃g h : Form, f = g
   injection h₁ with h₁ h₂
   injection h₁
 
+
 instance : Denumerable {f : Form // ∃g h : Form, f = g ¦ h} := 
   Denumerable.ofEncodableOfInfinite {f : Form // ∃g h : Form, f = g ¦ h}
     
