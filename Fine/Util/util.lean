@@ -1,26 +1,26 @@
 import Mathlib.Data.Finset.Basic
 import Mathlib.Init.Set
 
-lemma finiteExhaustion [inst: DecidableEq α] {fam : Nat → Set α} {fin : Finset α} :
-  Monotone fam → ↑fin ⊆ {x : α | ∃n : Nat, x ∈ fam n } → ∃n : Nat, ↑fin ⊆ fam n := by
+lemma finiteExhaustion [instDec: DecidableEq α] [instLinear: LinearOrder β] [instInhabited : Inhabited β] {fam : β → Set α} {fin : Finset α} :
+  Monotone fam → ↑fin ⊆ {x : α | ∃n : β, x ∈ fam n } → ∃n : β, ↑fin ⊆ fam n := by
     intros h₁
-    apply @Finset.induction_on α (λfs => ↑fs ⊆ {x : α | ∃n : Nat, x ∈ fam n } → ∃n : Nat, ↑fs ⊆ fam n) inst fin
+    apply @Finset.induction_on α (λfs => ↑fs ⊆ {x : α | ∃n : β, x ∈ fam n } → ∃n : β, ↑fs ⊆ fam n) instDec fin
     case empty =>
       intros _
-      refine ⟨0,?_⟩
+      refine ⟨default,?_⟩
       intros h₂ h₃
       contradiction
     case insert => 
       intros x fs _ h₃ h₄
-      have l₁ : x ∈ {x : α | ∃n : Nat, x ∈ fam n } := h₄ $ Finset.mem_insert_self x fs
+      have l₁ : x ∈ {x : α | ∃n : β, x ∈ fam n } := h₄ $ Finset.mem_insert_self x fs
       have ⟨n, l₂⟩ := l₁
-      have l₃ : ↑fs ⊆ {x : α | ∃n : Nat, x ∈ fam n } := by
+      have l₃ : ↑fs ⊆ {x : α | ∃n : β, x ∈ fam n } := by
         intros y h₅
         exact h₄ $ Finset.mem_insert_of_mem (Finset.mem_coe.mp h₅)
       have ⟨m, l₄⟩ := h₃ l₃
-      cases Nat.lt_or_ge n m
-      case inl lessthan => 
-        have l₅ := (h₁ $ Nat.le_of_lt $ lessthan) l₂
+      cases instLinear.le_total n m
+      case inl leqthan => 
+        have l₅ := (h₁ $ leqthan) l₂
         refine ⟨m,?_⟩
         intros y h₄
         cases Finset.mem_insert.mp h₄
