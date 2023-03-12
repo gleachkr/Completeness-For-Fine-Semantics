@@ -2,15 +2,24 @@ import Fine.FormalTheories
 
 open Classical
 
-noncomputable def lindenbaumExtension (t : Th) (Δ : Ctx) : Nat → Nat → Ctx
+def lindenbaumSequence (t : Th) (Δ : Ctx) : Nat → Nat → Ctx
   | 0, 0 => t.val
-  | i + 1, 0 => { f : Form | ∃j : Nat, f ∈ lindenbaumExtension t Δ i j }
+  | i + 1, 0 => { f : Form | ∃j : Nat, f ∈ lindenbaumSequence t Δ i j }
   | i, j + 1 => 
-    have prev := lindenbaumExtension t Δ i j
+    have prev := lindenbaumSequence t Δ i j
     have ⟨l,r⟩ := Denumerable.ofNat (Form × Form) j
     if l ¦ r ∈ ▲prev 
     then if ▲(prev ∪ {l}) ∩ Δ = ∅
       then prev ∪ {l}
       else prev ∪ {r}
     else prev
-  termination_by lindenbaumExtension t Δ i j => (i,j)
+  termination_by lindenbaumSequence t Δ i j => (i,j)
+
+def lindenbaumExtension (t : Th) (Δ : Ctx) : Ctx := {f | ∃n m : Nat, f ∈ lindenbaumSequence t Δ n m }
+
+lemma lindenbaumExtensionExtends { t : Th } { Δ : Ctx } : t.val ⊆ lindenbaumExtension t Δ := by
+  intros f h₁
+  refine ⟨0,0,?_⟩
+  assumption
+
+theorem lindenbaumIsFormal { t : Th } { Δ : Ctx } : formalTheory (lindenbaumExtension t Δ) := sorry
