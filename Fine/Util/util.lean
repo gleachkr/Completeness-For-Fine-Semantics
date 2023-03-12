@@ -1,7 +1,7 @@
 import Mathlib.Data.Finset.Basic
 import Mathlib.Init.Set
 
-lemma finiteExhaustion [instDec: DecidableEq α] [instLinear: LinearOrder β] [instInhabited : Inhabited β] {fam : β → Set α} {fin : Finset α} :
+lemma finiteExhaustion [instDec: DecidableEq α] [LinearOrder β] [Inhabited β] {fam : β → Set α} {fin : Finset α} :
   Monotone fam → ↑fin ⊆ {x : α | ∃n : β, x ∈ fam n } → ∃n : β, ↑fin ⊆ fam n := by
     intros h₁
     apply @Finset.induction_on α (λfs => ↑fs ⊆ {x : α | ∃n : β, x ∈ fam n } → ∃n : β, ↑fs ⊆ fam n) instDec fin
@@ -18,7 +18,7 @@ lemma finiteExhaustion [instDec: DecidableEq α] [instLinear: LinearOrder β] [i
         intros y h₅
         exact h₄ $ Finset.mem_insert_of_mem (Finset.mem_coe.mp h₅)
       have ⟨m, l₄⟩ := h₃ l₃
-      cases instLinear.le_total n m
+      cases le_total n m
       case inl leqthan => 
         have l₅ := (h₁ $ leqthan) l₂
         refine ⟨m,?_⟩
