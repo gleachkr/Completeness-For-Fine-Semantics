@@ -20,14 +20,14 @@ lemma finiteExhaustion [instDec: DecidableEq α] [LinearOrder β] [Inhabited β]
       have ⟨m, l₄⟩ := h₃ l₃
       cases le_total n m
       case inl leqthan => 
-        have l₅ := (h₁ $ leqthan) l₂
+        have l₅ := (h₁ leqthan) l₂
         refine ⟨m,?_⟩
         intros y h₄
         cases Finset.mem_insert.mp h₄
         case inl h₅ => rw [h₅]; assumption
         case inr h₅ => exact l₄ h₅
       case inr geqthan =>
-        have l₅ := le_trans l₄ (h₁ $ geqthan) 
+        have l₅ := le_trans l₄ (h₁ geqthan) 
         refine ⟨n,?_⟩
         intros y h₄
         cases Finset.mem_insert.mp h₄
