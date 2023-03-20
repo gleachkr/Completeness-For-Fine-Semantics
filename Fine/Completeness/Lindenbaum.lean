@@ -18,7 +18,7 @@ def lindenbaumSequence (t : Th) (Δ : Ctx) : Lex (Nat × Nat) → Ctx
   termination_by lindenbaumSequence t Δ p => (p.fst, p.snd)
 
 
-lemma lindenbaumSequenceMonotone { t : Th } { Δ : Ctx } : ∀b a, a ≤ b → lindenbaumSequence t Δ a ⊆ lindenbaumSequence t Δ b := by
+lemma lindenbaumSequenceMonotone' { t : Th } { Δ : Ctx } : ∀b a, a ≤ b → lindenbaumSequence t Δ a ⊆ lindenbaumSequence t Δ b := by
   intros b
   match b with
     | ⟨0, 0⟩ =>
@@ -38,7 +38,7 @@ lemma lindenbaumSequenceMonotone { t : Th } { Δ : Ctx } : ∀b a, a ≤ b → l
           case inl h₂ => exact Or.inl h₂
           case inr h₂ => exact Or.inr ⟨h₂, le_refl b₁⟩
         have l₃ := (Prod.Lex.le_iff (a₁, b₁) (i,b₁)).mpr l₂
-        have l₄ := @lindenbaumSequenceMonotone t Δ (i,b₁) (a₁, b₁) l₃
+        have l₄ := @lindenbaumSequenceMonotone' t Δ (i,b₁) (a₁, b₁) l₃
         apply le_trans l₄
         intros f h₂
         exact ⟨b₁,h₂⟩
@@ -72,7 +72,7 @@ lemma lindenbaumSequenceMonotone { t : Th } { Δ : Ctx } : ∀b a, a ≤ b → l
       case left a₁ b₁ h₂ =>
           have l₁ : a₁ < i ∨ a₁ = i ∧ b₁ ≤ j := Or.inl h₂
           have l₂ := (Prod.Lex.le_iff (a₁, b₁) (i,j)).mpr l₁
-          have l₃ := @lindenbaumSequenceMonotone t Δ (i,j) (a₁, b₁)  l₂
+          have l₃ := @lindenbaumSequenceMonotone' t Δ (i,j) (a₁, b₁)  l₂
           apply le_trans l₃
           exact lem
       case right b₁ h₂ =>
@@ -81,11 +81,15 @@ lemma lindenbaumSequenceMonotone { t : Th } { Δ : Ctx } : ∀b a, a ≤ b → l
         case step h₂ =>
           have l₁ : i < i ∨ i = i ∧ b₁ ≤ j := Or.inr ⟨rfl, h₂⟩
           have l₂ := (Prod.Lex.le_iff (i, b₁) (i,j)).mpr l₁
-          have l₃ := @lindenbaumSequenceMonotone t Δ (i,j) (i, b₁)  l₂
+          have l₃ := @lindenbaumSequenceMonotone' t Δ (i,j) (i, b₁)  l₂
           apply le_trans l₃
           exact lem
           
-  termination_by lindenbaumSequenceMonotone t Δ b => (b.fst, b.snd)
+  termination_by lindenbaumSequenceMonotone' t Δ b => (b.fst, b.snd)
+
+lemma lindenbaumSequenceMonotone { t : Th } { Δ : Ctx } : Monotone (lindenbaumSequence t Δ) := by
+  intros a b
+  exact lindenbaumSequenceMonotone' b a  
 
 def lindenbaumExtension (t : Th) (Δ : Ctx) : Ctx := {f | ∃n m : Nat, f ∈ lindenbaumSequence t Δ ⟨n, m⟩ }
 
