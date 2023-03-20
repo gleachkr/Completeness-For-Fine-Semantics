@@ -7,26 +7,28 @@ def lindenbaumSequence (t : Th) (Δ : Ctx) : Lex (Nat × Nat) → Ctx
   | ⟨0, 0⟩ => t.val
   | ⟨i + 1, 0⟩ => { f : Form | ∃j : Nat, f ∈ lindenbaumSequence t Δ ⟨i, j⟩ }
   | ⟨i, j + 1⟩ => 
-    have prev := lindenbaumSequence t Δ ⟨i, j⟩
-    have ⟨l,r⟩ := Denumerable.ofNat (Form × Form) j
-    if l ¦ r ∈ ▲prev 
+    let prev := lindenbaumSequence t Δ ⟨i, j⟩
+    let l := (Denumerable.ofNat (Form × Form) j).fst
+    let r := (Denumerable.ofNat (Form × Form) j).snd
+    if l ¦ r ∈ ▲prev
     then if ▲(prev ∪ {l}) ∩ Δ = ∅
       then prev ∪ {l}
       else prev ∪ {r}
     else prev
   termination_by lindenbaumSequence t Δ p => (p.fst, p.snd)
 
+
 lemma lindenbaumSequenceMonotone { t : Th } { Δ : Ctx } : ∀b a, a ≤ b → lindenbaumSequence t Δ a ⊆ lindenbaumSequence t Δ b := by
   intros b
   match b with
-    | ⟨0, 0⟩ => 
+    | ⟨0, 0⟩ =>
       intros a h₁
       cases h₁
       case left a₁ _ h₂ => exact False.elim $ Nat.not_lt_zero a₁ h₂
       case right b₁ h₂ =>
         rw [Nat.le_zero_eq b₁] at h₂
         rw [h₂]
-    | ⟨i + 1, 0⟩ => 
+    | ⟨i + 1, 0⟩ =>
       intros a h₁
       cases h₁
       case left a₁ b₁ h₂ => 
@@ -40,24 +42,48 @@ lemma lindenbaumSequenceMonotone { t : Th } { Δ : Ctx } : ∀b a, a ≤ b → l
         apply le_trans l₄
         intros f h₂
         exact ⟨b₁,h₂⟩
-      case right b₁ h₂ => 
+      case right b₁ h₂ =>
         rw [Nat.le_zero_eq b₁] at h₂
         rw [h₂]
-    | ⟨i, j + 1⟩ => 
+    | ⟨i, j + 1⟩ =>
+      have lem : lindenbaumSequence t Δ (i, j) ≤ lindenbaumSequence t Δ (i, j + 1) := by
+        intros f h₃
+        unfold lindenbaumSequence
+        split
+        case h_1 _ heq | h_2 _ heq => injection heq; contradiction
+        case h_3 i' j' heq =>
+          injection heq with heq₁ heq₂
+          injection heq₂ with heq₂
+          have heq₃ : j = j' := heq₂
+          rw [←heq₁, ←heq₃]
+          change
+            let prev := lindenbaumSequence t Δ (i, j);
+            let l := (Denumerable.ofNat (Form × Form) j).fst;
+            let r := (Denumerable.ofNat (Form × Form) j).snd;
+            f ∈ if l¦r ∈ ▲prev then if ▲(prev ∪ {l}) ∩ Δ = ∅ then prev ∪ {l} else prev ∪ {r} else prev
+          intros prev l r
+          split
+          case inl =>
+            split
+            case inl | inr => apply Or.inl h₃
+          case inr => exact h₃
       intros a h₁
       cases h₁
-      case left a₁ b₁ h₂ => sorry
-      case right b₁ h₂ => 
+      case left a₁ b₁ h₂ =>
+          have l₁ : a₁ < i ∨ a₁ = i ∧ b₁ ≤ j := Or.inl h₂
+          have l₂ := (Prod.Lex.le_iff (a₁, b₁) (i,j)).mpr l₁
+          have l₃ := @lindenbaumSequenceMonotone t Δ (i,j) (a₁, b₁)  l₂
+          apply le_trans l₃
+          exact lem
+      case right b₁ h₂ =>
         cases h₂
-        case refl => intros f h₁; assumption
-        case step h₂ => 
+        case refl => intros _ h₁; assumption
+        case step h₂ =>
           have l₁ : i < i ∨ i = i ∧ b₁ ≤ j := Or.inr ⟨rfl, h₂⟩
           have l₂ := (Prod.Lex.le_iff (i, b₁) (i,j)).mpr l₁
           have l₃ := @lindenbaumSequenceMonotone t Δ (i,j) (i, b₁)  l₂
           apply le_trans l₃
-          intros f h₃
-          sorry
-
+          exact lem
           
   termination_by lindenbaumSequenceMonotone t Δ b => (b.fst, b.snd)
 
