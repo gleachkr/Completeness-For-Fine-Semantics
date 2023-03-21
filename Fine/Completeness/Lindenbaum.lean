@@ -1,5 +1,6 @@
 import Fine.FormalTheories
 import Mathlib.Data.Prod.Lex
+import Fine.Util.util
 
 open Classical
 
@@ -98,4 +99,16 @@ lemma lindenbaumExtensionExtends { t : Th } { Δ : Ctx } : t.val ⊆ lindenbaumE
   refine ⟨0,0,?_⟩
   assumption
 
-theorem lindenbaumIsFormal { t : Th } { Δ : Ctx } : formalTheory (lindenbaumExtension t Δ) := sorry
+theorem lindenbaumIsFormal { t : Th } { Δ : Ctx } : formalTheory (lindenbaumExtension t Δ) := by
+  intros f
+  apply Iff.intro
+  case mp =>
+    intro h₁
+    exact ⟨BProof.ax h₁⟩
+  case mpr => 
+    intro h₁
+    have ⟨prf⟩ := h₁
+    have ⟨s, fprf⟩ := BProof.compactness prf
+    sorry
+
+
