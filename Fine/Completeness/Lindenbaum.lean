@@ -110,17 +110,34 @@ theorem lindenbaumIsFormal { t : Th } { Δ : Ctx } : formalTheory (lindenbaumExt
     have ⟨prf₁⟩ := h₁
     have ⟨s, l₁, fprf⟩ := BProof.compactness prf₁
     have ⟨⟨i,j⟩,l₂⟩ := finiteExhaustion lindenbaumSequenceMonotone l₁
-    have l₃ : lindenbaumSequence t Δ ⟨i,j⟩ ⊆ lindenbaumSequence t Δ ⟨i+1,0⟩ := by
+    have l₃ : lindenbaumSequence t Δ ⟨i,j⟩ ⊆ lindenbaumSequence t Δ ⟨i + 1,Encodable.encode (f,f)⟩ := by
       apply lindenbaumSequenceMonotone
-      apply (Prod.Lex.le_iff (i,j) (i+1,0)).mpr
-      exact Or.inl $ Nat.succ_eq_add_one i ▸ Nat.lt_succ_self i
-    have l₄ : ↑s ⊆ lindenbaumSequence t Δ ⟨i+1,0⟩ := by
-      intros g h₂
-      exact l₃ (l₂ h₂)
-    clear l₁ l₂ l₃
-    have prf₂ : BProof (lindenbaumSequence t Δ ⟨i+1,0⟩) f := BProof.monotone l₄ fprf
-    clear fprf l₄
-    sorry
-      
-
-
+      apply (Prod.Lex.le_iff (i,j) (i + 1,Encodable.encode (f,f))).mpr $ Or.inl $ Nat.lt_succ_self i
+    have prf₂ := BProof.monotone (le_trans l₂ l₃) fprf
+    have prf₃ : BProof (lindenbaumSequence t Δ ⟨i+1,Encodable.encode (f,f)⟩) (f ¦ f) := BProof.mp prf₂ BTheorem.orI₁
+    clear s h₁ l₁ l₂ l₃ fprf prf₁ prf₂ 
+    have l₄ : f ∈ lindenbaumSequence t Δ ⟨i + 1, Encodable.encode (f,f) + 1⟩ := by
+      unfold lindenbaumSequence
+      change
+        let prev := lindenbaumSequence t Δ (i + 1, Encodable.encode (f,f));
+        let l := (Denumerable.ofNat (Form × Form) (Encodable.encode (f,f))).fst;
+        let r := (Denumerable.ofNat (Form × Form) (Encodable.encode (f,f))).snd;
+        f ∈ if l¦r ∈ ▲prev then if ▲(prev ∪ {l}) ∩ Δ = ∅ then prev ∪ {l} else prev ∪ {r} else prev
+      intros prev l r
+      have l₅ : l = f := by 
+        change (Denumerable.ofNat (Form × Form) (Encodable.encode (f, f))).fst = f
+        rw [Denumerable.ofNat_encode (f,f)]
+      have l₆ : r = f := by
+        change (Denumerable.ofNat (Form × Form) (Encodable.encode (f, f))).snd = f
+        rw [Denumerable.ofNat_encode (f,f)]
+      split
+      case inl h₂ =>
+        split
+        . rw [l₅]; exact Or.inr rfl
+        . rw [l₆]; exact Or.inr rfl
+      case inr h₂ =>
+        apply False.elim
+        have l₇ : f¦f ∈ ▲prev := ⟨prf₃⟩
+        rw [l₅,l₆] at h₂
+        exact h₂ l₇
+    exact ⟨⟨i + 1, Encodable.encode (f,f) + 1⟩, l₄⟩

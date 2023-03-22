@@ -55,14 +55,14 @@ theorem toForm_toConsExp_eq (f : Form) : f.toConsExp.toForm = some f := by
 instance Form.infinite : Infinite Form := 
   Infinite.of_injective Form.atom Form.nat_injection
 
-instance : Encodable Form where
+def Form.encodable : Encodable Form where
   encode f := Encodable.encode f.toConsExp
   decode n := Option.bind (Encodable.decode n) ConsExp.toForm 
   encodek := by
     intro f
     simp [toForm_toConsExp_eq]
 
-instance : Denumerable Form := Denumerable.ofEncodableOfInfinite Form
+instance : Denumerable Form := @Denumerable.ofEncodableOfInfinite Form Form.encodable Form.infinite
 
 instance Form.disjunctions_encodable : Encodable {f : Form // ∃g h : Form, f = g ¦ h} := Encodable.Subtype.encodable
 
@@ -73,7 +73,6 @@ instance Form.disjunctions_infinite : Infinite {f : Form // ∃g h : Form, f = g
   injection h₁ with h₁
   injection h₁ with h₁ h₂
   injection h₁
-
 
 instance : Denumerable {f : Form // ∃g h : Form, f = g ¦ h} := 
   Denumerable.ofEncodableOfInfinite {f : Form // ∃g h : Form, f = g ¦ h}
