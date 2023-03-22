@@ -92,11 +92,11 @@ lemma lindenbaumSequenceMonotone { t : Th } { Δ : Ctx } : Monotone (lindenbaumS
   intros a b
   exact lindenbaumSequenceMonotone' b a  
 
-def lindenbaumExtension (t : Th) (Δ : Ctx) : Ctx := {f | ∃n m : Nat, f ∈ lindenbaumSequence t Δ ⟨n, m⟩ }
+def lindenbaumExtension (t : Th) (Δ : Ctx) : Ctx := {f | ∃ij : Nat × Nat, f ∈ lindenbaumSequence t Δ ij }
 
 lemma lindenbaumExtensionExtends { t : Th } { Δ : Ctx } : t.val ⊆ lindenbaumExtension t Δ := by
   intros f h₁
-  refine ⟨0,0,?_⟩
+  refine ⟨⟨0,0⟩,?_⟩
   assumption
 
 theorem lindenbaumIsFormal { t : Th } { Δ : Ctx } : formalTheory (lindenbaumExtension t Δ) := by
@@ -105,10 +105,22 @@ theorem lindenbaumIsFormal { t : Th } { Δ : Ctx } : formalTheory (lindenbaumExt
   case mp =>
     intro h₁
     exact ⟨BProof.ax h₁⟩
-  case mpr => 
+  case mpr =>
     intro h₁
-    have ⟨prf⟩ := h₁
-    have ⟨s, fprf⟩ := BProof.compactness prf
+    have ⟨prf₁⟩ := h₁
+    have ⟨s, l₁, fprf⟩ := BProof.compactness prf₁
+    have ⟨⟨i,j⟩,l₂⟩ := finiteExhaustion lindenbaumSequenceMonotone l₁
+    have l₃ : lindenbaumSequence t Δ ⟨i,j⟩ ⊆ lindenbaumSequence t Δ ⟨i+1,0⟩ := by
+      apply lindenbaumSequenceMonotone
+      apply (Prod.Lex.le_iff (i,j) (i+1,0)).mpr
+      exact Or.inl $ Nat.succ_eq_add_one i ▸ Nat.lt_succ_self i
+    have l₄ : ↑s ⊆ lindenbaumSequence t Δ ⟨i+1,0⟩ := by
+      intros g h₂
+      exact l₃ (l₂ h₂)
+    clear l₁ l₂ l₃
+    have prf₂ : BProof (lindenbaumSequence t Δ ⟨i+1,0⟩) f := BProof.monotone l₄ fprf
+    clear fprf l₄
     sorry
+      
 
 
