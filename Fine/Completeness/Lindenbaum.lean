@@ -18,7 +18,6 @@ def lindenbaumSequence (t : Th) (Δ : Ctx) : Lex (Nat × Nat) → Ctx
     else prev
   termination_by lindenbaumSequence t Δ p => (p.fst, p.snd)
 
-
 lemma lindenbaumSequenceMonotone' { t : Th } { Δ : Ctx } : ∀b a, a ≤ b → lindenbaumSequence t Δ a ⊆ lindenbaumSequence t Δ b := by
   intros b
   match b with
@@ -141,3 +140,47 @@ theorem lindenbaumIsFormal { t : Th } { Δ : Ctx } : formalTheory (lindenbaumExt
         rw [l₅,l₆] at h₂
         exact h₂ l₇
     exact ⟨⟨i + 1, Encodable.encode (f,f) + 1⟩, l₄⟩
+
+theorem lindenbaumIsPrime { t : Th } { Δ : Ctx } : PrimeTheory (lindenbaumExtension t Δ) := by
+  intros f g h₁
+  have ⟨⟨i,j⟩,h₂⟩ := h₁
+  let k := Encodable.encode (f,g)
+  have l₁ : lindenbaumSequence t Δ ⟨i,j⟩ ⊆ lindenbaumSequence t Δ ⟨i + 1,k⟩ := by
+    apply lindenbaumSequenceMonotone
+    apply (Prod.Lex.le_iff (i,j) (i + 1,k)).mpr $ Or.inl $ Nat.lt_succ_self i
+  have l₂ : f ¦ g ∈ lindenbaumSequence t Δ ⟨i + 1, k⟩ := l₁ h₂
+  clear l₁ h₁ h₂
+  have l₃ : f ∈ lindenbaumSequence t Δ ⟨i + 1, k + 1⟩ ∨ g ∈ lindenbaumSequence t Δ ⟨i + 1, k + 1⟩ := by
+    unfold lindenbaumSequence
+    change
+      let prev := lindenbaumSequence t Δ (i + 1, k);
+      let l := (Denumerable.ofNat (Form × Form) k).fst;
+      let r := (Denumerable.ofNat (Form × Form) k).snd;
+      (f ∈ if l¦r ∈ ▲prev then if ▲(prev ∪ {l}) ∩ Δ = ∅ then prev ∪ {l} else prev ∪ {r} else prev) ∨ 
+      (g ∈ if l¦r ∈ ▲prev then if ▲(prev ∪ {l}) ∩ Δ = ∅ then prev ∪ {l} else prev ∪ {r} else prev)
+    intros prev l r
+    have l₄ : Denumerable.ofNat (Form × Form) k = (f,g) := Denumerable.ofNat_encode (f,g)
+    have l₅ : l = f := by 
+      change (Denumerable.ofNat (Form × Form) k).fst = f
+      rw [l₄]
+    have l₆ : r = g := by 
+      change (Denumerable.ofNat (Form × Form) k).snd = g
+      rw [l₄]
+    repeat rw [l₅,l₆]
+    clear l r l₅ l₆
+    cases Classical.em (▲(prev ∪ {f}) ∩ Δ = ∅)
+    case inl h₁ =>
+      apply Or.inl
+      split
+      case inl => exact Or.inr rfl
+      case inr h₂ => exact False.elim $ h₂ ⟨BProof.ax l₂⟩
+    case inr h₁ =>
+      apply Or.inr
+      split
+      case inl => exact Or.inr rfl
+      case inr h₂ => exact False.elim $ h₂ ⟨BProof.ax l₂⟩
+  apply Or.elim l₃
+  case left => intros h₁; exact Or.inl ⟨⟨i+1,k+1⟩,h₁⟩
+  case right => intros h₁; exact Or.inr ⟨⟨i+1,k+1⟩,h₁⟩
+
+
