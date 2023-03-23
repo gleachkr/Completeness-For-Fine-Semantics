@@ -169,18 +169,12 @@ theorem lindenbaumIsPrime { t : Th } { Δ : Ctx } : PrimeTheory (lindenbaumExten
     repeat rw [l₅,l₆]
     clear l r l₅ l₆
     cases Classical.em (▲(prev ∪ {f}) ∩ Δ = ∅)
-    case inl h₁ =>
-      apply Or.inl
-      split
-      case inl => exact Or.inr rfl
-      case inr h₂ => exact False.elim $ h₂ ⟨BProof.ax l₂⟩
-    case inr h₁ =>
-      apply Or.inr
+    case' inl h₁ => apply Or.inl
+    case' inr h₁ => apply Or.inr
+    all_goals
       split
       case inl => exact Or.inr rfl
       case inr h₂ => exact False.elim $ h₂ ⟨BProof.ax l₂⟩
   apply Or.elim l₃
   case left => intros h₁; exact Or.inl ⟨⟨i+1,k+1⟩,h₁⟩
   case right => intros h₁; exact Or.inr ⟨⟨i+1,k+1⟩,h₁⟩
-
-
