@@ -16,7 +16,7 @@ def lindenbaumSequence (t : Th) (Δ : Ctx) : Lex (Nat × Nat) → Ctx
       then prev ∪ {l}
       else prev ∪ {r}
     else prev
-  termination_by lindenbaumSequence t Δ p => (p.fst, p.snd)
+  termination_by lindenbaumSequence _ _ p => (p.fst, p.snd)
 
 lemma lindenbaumSequenceMonotone' { t : Th } { Δ : Ctx } : ∀b a, a ≤ b → lindenbaumSequence t Δ a ⊆ lindenbaumSequence t Δ b := by
   intros b
@@ -85,7 +85,7 @@ lemma lindenbaumSequenceMonotone' { t : Th } { Δ : Ctx } : ∀b a, a ≤ b → 
           apply le_trans l₃
           exact lem
           
-  termination_by lindenbaumSequenceMonotone' t Δ b => (b.fst, b.snd)
+  termination_by lindenbaumSequenceMonotone' _ _ b => (b.fst, b.snd)
 
 lemma lindenbaumSequenceMonotone { t : Th } { Δ : Ctx } : Monotone (lindenbaumSequence t Δ) := by
   intros a b
@@ -190,5 +190,34 @@ theorem lindenbaumAvoids { t : Th } { Δ : Ctx } { h₁ : ↑t ∩ Δ = ∅ } { 
     clear h₃
     have l₃ := @lindenbaumAvoids t Δ h₁ h₂ ⟨i,j⟩
     exact (Set.not_nonempty_iff_eq_empty.mpr l₃) ⟨w, l₂, l₁⟩
-  | ⟨i, j + 1⟩ => sorry
+  | ⟨i, j + 1⟩ => by
+    apply Set.not_nonempty_iff_eq_empty.mp
+    intros h₃
+    have ⟨w,l₁,l₂⟩ := h₃
+    unfold lindenbaumSequence at l₁
+    split at l₁
+    case h_1 x heq => injection heq with heq; contradiction
+    case h_2 x heq => injection heq with heq; contradiction
+    case h_3 x n m heq =>
+      injection heq with heq₁ heq₂
+      injection heq₂ with heq₂
+      rw [←heq₁,←heq₂] at l₁
+      clear n m x heq₁ heq₂ h₃
+      dsimp at l₁
+      split at l₁
+      case inr h₄ =>
+        have l₃ := @lindenbaumAvoids t Δ h₁ h₂ ⟨i,j⟩
+        exact (Set.not_nonempty_iff_eq_empty.mpr l₃) ⟨w, l₁, l₂⟩
+      case inl h₄ =>
+        split at l₁
+        all_goals
+          cases l₁
+          case inl h₆ => 
+            have l₃ := @lindenbaumAvoids t Δ h₁ h₂ ⟨i,j⟩
+            exact (Set.not_nonempty_iff_eq_empty.mpr l₃) ⟨w, h₆, l₂⟩
+          rename_i h₅ h₆
+          rw [←h₆] at h₄
+        case inl => sorry
+        case inr => sorry
+
   termination_by lindenbaumAvoids _ _ _ _ p => (p.fst, p.snd)
