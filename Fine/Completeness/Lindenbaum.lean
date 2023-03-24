@@ -178,3 +178,17 @@ theorem lindenbaumIsPrime { t : Th } { Δ : Ctx } : PrimeTheory (lindenbaumExten
   apply Or.elim l₃
   case left => intros h₁; exact Or.inl ⟨⟨i+1,k+1⟩,h₁⟩
   case right => intros h₁; exact Or.inr ⟨⟨i+1,k+1⟩,h₁⟩
+
+theorem lindenbaumAvoids { t : Th } { Δ : Ctx } { h₁ : ↑t ∩ Δ = ∅ } { h₂ : DisjunctionClosed Δ } : ∀ij, lindenbaumSequence t Δ ij ∩ Δ = ∅ 
+  | ⟨0,0⟩ => by exact h₁
+  | ⟨i + 1, 0⟩ => by
+    change 
+      { f : Form | ∃j : Nat, f ∈ lindenbaumSequence t Δ ⟨i, j⟩ } ∩ Δ = ∅
+    apply Set.not_nonempty_iff_eq_empty.mp
+    intros h₃
+    have ⟨w,⟨j,l₂⟩,l₁⟩ := h₃
+    clear h₃
+    have l₃ := @lindenbaumAvoids t Δ h₁ h₂ ⟨i,j⟩
+    exact (Set.not_nonempty_iff_eq_empty.mpr l₃) ⟨w, l₂, l₁⟩
+  | ⟨i, j + 1⟩ => sorry
+  termination_by lindenbaumAvoids _ _ _ _ p => (p.fst, p.snd)
