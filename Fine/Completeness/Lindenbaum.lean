@@ -219,8 +219,25 @@ theorem lindenbaumAvoids { t : Th } { Δ : Ctx } { h₁ : ↑t ∩ Δ = ∅ } { 
           rw [←h₆] at h₄
         case inl => 
           rw [←h₆] at h₅
-          have l₄ : w ∈ ▲(lindenbaumSequence t Δ (i,j) ∪ {w}) := ⟨BProof.ax (Or.inr $ rfl)⟩
-          exact Set.not_nonempty_iff_eq_empty.mpr h₅ $ ⟨w,l₄,l₂⟩
-        case inr => sorry
-
+          have l₃ : w ∈ ▲(lindenbaumSequence t Δ (i,j) ∪ {w}) := ⟨BProof.ax (Or.inr $ rfl)⟩
+          exact Set.not_nonempty_iff_eq_empty.mpr h₅ $ ⟨w,l₃,l₂⟩
+        case inr =>
+          have l₃ := @lindenbaumAvoids t Δ h₁ h₂ ⟨i,j⟩
+          have ⟨x,⟨prf₁⟩,l₅⟩ := Set.nonempty_iff_ne_empty.mpr h₅
+          have ⟨prf₂⟩ := h₄
+          clear h₄ h₅ h₆
+          let k := (Denumerable.ofNat (Form × Form) (j + 0)).fst
+          --silly workaround because changeAt doesn't work
+          have triv_eq : (Denumerable.ofNat (Form × Form) (j + 0)).fst = k := rfl
+          rw [triv_eq] at prf₁
+          rw [triv_eq] at prf₂
+          clear triv_eq
+          have l₆ : x¦w ∈ Δ := h₂ ⟨l₅,l₂⟩
+          clear l₂ l₅ h₂
+          -- sketch: 
+          -- 1. get a theorem t ∧ k → x, for t ⊣ LBS (new general Hilbert-level lemma)
+          -- 2. get LBS ⊢ t ∧ k ¦ t ∧ w, by distributivity.
+          -- 3. get LBS ⊢ x ¦ w , by or-elim
+          -- 4. contradiction via l₃ l₆
+          sorry
   termination_by lindenbaumAvoids _ _ _ _ p => (p.fst, p.snd)
