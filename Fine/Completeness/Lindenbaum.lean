@@ -203,7 +203,7 @@ theorem lindenbaumAvoids { t : Th } { Δ : Ctx } { h₁ : ↑t ∩ Δ = ∅ } { 
       injection heq₂ with heq₂
       rw [←heq₁,←heq₂] at l₁
       clear n m x heq₁ heq₂ h₃
-      dsimp at l₁
+      dsimp at l₁ 
       split at l₁
       case inr h₄ =>
         have l₃ := @lindenbaumAvoids t Δ h₁ h₂ ⟨i,j⟩
@@ -217,7 +217,10 @@ theorem lindenbaumAvoids { t : Th } { Δ : Ctx } { h₁ : ↑t ∩ Δ = ∅ } { 
             exact (Set.not_nonempty_iff_eq_empty.mpr l₃) ⟨w, h₆, l₂⟩
           rename_i h₅ h₆
           rw [←h₆] at h₄
-        case inl => sorry
+        case inl => 
+          rw [←h₆] at h₅
+          have l₄ : w ∈ ▲(lindenbaumSequence t Δ (i,j) ∪ {w}) := ⟨BProof.ax (Or.inr $ rfl)⟩
+          exact Set.not_nonempty_iff_eq_empty.mpr h₅ $ ⟨w,l₄,l₂⟩
         case inr => sorry
 
   termination_by lindenbaumAvoids _ _ _ _ p => (p.fst, p.snd)
