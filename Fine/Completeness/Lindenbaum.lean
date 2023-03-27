@@ -234,6 +234,24 @@ theorem lindenbaumAvoids { t : Th } { Δ : Ctx } { h₁ : ↑t ∩ Δ = ∅ } { 
           clear triv_eq
           have l₆ : x¦w ∈ Δ := h₂ ⟨l₅,l₂⟩
           clear l₂ l₅ h₂
+          have ⟨s₁,l₇,prf₃⟩ := BProof.compactness prf₁
+          let s₂ := Finset.erase s₁ k
+          have l₈ : ↑s₂ ⊆ lindenbaumSequence t Δ (i,j) := by
+            intros f h₇
+            rw [Finset.coe_erase k s₁] at h₇
+            cases l₇ h₇.left
+            case inl => assumption
+            case inr h₈ => exact False.elim (h₇.right h₈)
+          have l₉ : s₁ ⊆ s₂ ∪ {k} := by
+            intros f h₇
+            cases decEq f k
+            case isTrue h₈ => 
+              rw [h₈]
+              exact Finset.mem_union.mpr $ Or.inr $ Finset.mem_singleton.mpr rfl
+            case isFalse h₈ =>
+              exact Finset.mem_union.mpr $ Or.inl $ Finset.mem_erase.mpr ⟨h₈, h₇⟩
+          have prf₄ := BProof.monotone (Finset.coe_subset.mpr l₉) prf₃
+          clear l₉ l₇ prf₃
           -- sketch: 
           -- 1. get a theorem t ∧ k → x, for t ⊣ LBS (new general Hilbert-level lemma)
           -- 2. get LBS ⊢ t ∧ k ¦ t ∧ w, by distributivity.
