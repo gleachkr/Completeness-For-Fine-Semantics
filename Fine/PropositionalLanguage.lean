@@ -94,3 +94,7 @@ abbrev Ctx := Set Form
 
 instance instMembership : Membership Form Ctx where
   mem p Γ := Γ p
+
+def Form.conjoinList (f : Form) : List Form → Form
+  | [] => f
+  | a :: as => a & Form.conjoinList f as

@@ -37,7 +37,7 @@ def BProof.monotone { f : Form } { Γ : Ctx } { Δ : Ctx } (mono: Γ ⊆ Δ ) : 
   | mp prf₁ thm₂ => mp (monotone mono prf₁) thm₂
   | adj prf₁ prf₂ => adj (monotone mono prf₁) (monotone mono prf₂)
 
-def BProof.adjoinPremises { r : Form } : BProof {p,q} r → BProof {p & q} r
+def BProof.adjoinPremises { p q r : Form } : BProof {p,q} r → BProof {p & q} r
   | ax h => if c₁ : r = p then by
               rw [c₁]
               exact mp (ax rfl : BProof {p&q} (p&q)) andE₁
@@ -47,6 +47,18 @@ def BProof.adjoinPremises { r : Form } : BProof {p,q} r → BProof {p & q} r
             else False.elim (Or.elim h c₁ c₂)
   | mp h₁ h₂ => mp (adjoinPremises h₁) h₂
   | adj h₁ h₂ => adj (adjoinPremises h₁) (adjoinPremises h₂)
+
+def BProof.proveList { l : List Form } {f : Form } { Γ : Ctx } : f ∈ Γ → { g | g ∈ l } ⊆ Γ → BProof Γ (Form.conjoinList f l) := by
+  intros h₁ h₂
+  induction l
+  case nil => exact BProof.ax h₁
+  case cons head tail ih =>
+    have l₂ : { g | g ∈ tail } ⊆ Γ := by
+      intros g h₁
+      exact h₂ $ List.mem_cons.mpr $ Or.inr h₁
+    have prf₁ := ih l₂
+    have l₃ : head ∈ head :: tail := by simp
+    exact BProof.adj (BProof.ax $ h₂ l₃) prf₁ 
 
 theorem BProof.compactness { Γ : Ctx } { f : Form } : BProof Γ f → Σs : Finset Form, Σ'_ : ↑s ⊆ Γ,  BProof ↑s f := by
   intros prf₁; induction prf₁
