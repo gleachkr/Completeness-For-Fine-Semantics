@@ -48,7 +48,7 @@ def BProof.adjoinPremises { p q r : Form } : BProof {p,q} r → BProof {p & q} r
   | mp h₁ h₂ => mp (adjoinPremises h₁) h₂
   | adj h₁ h₂ => adj (adjoinPremises h₁) (adjoinPremises h₂)
 
-def BProof.proveList { l : List Form } {f : Form } { Γ : Ctx } : f ∈ Γ → { g | g ∈ l } ⊆ Γ → BProof Γ (Form.conjoinList f l) := by
+def BProof.proveList { l : List Form } { f : Form } { Γ : Ctx } : f ∈ Γ → { g | g ∈ l } ⊆ Γ → BProof Γ (Form.conjoinList f l) := by
   intros h₁ h₂
   induction l
   case nil => exact BProof.ax h₁
@@ -59,6 +59,37 @@ def BProof.proveList { l : List Form } {f : Form } { Γ : Ctx } : f ∈ Γ → {
     have prf₁ := ih l₂
     have l₃ : head ∈ head :: tail := by simp
     exact BProof.adj (BProof.ax $ h₂ l₃) prf₁ 
+
+def BProof.proveFromList { l : List Form } { f : Form } { Γ : Ctx } : g ∈ f :: l → BProof {Form.conjoinList f l} g := by
+  intros h₁
+  induction l
+  case nil =>
+    have l₁ : g = f := by
+      cases List.mem_cons.mp h₁
+      . assumption
+      . contradiction
+    rw [l₁]
+    have l₂ : f ∈ ({f} : Ctx) := rfl
+    exact BProof.ax l₂
+  case cons head tail ih =>
+      cases decEq g head
+      case isFalse h₂ =>
+        have l₁ : g ∈ f :: tail := by
+          cases List.mem_cons.mp h₁
+          case inl h₃ => exact List.mem_cons.mpr $ Or.inl h₃
+          case inr h₃ => 
+            cases List.mem_cons.mp h₃
+            case inl => contradiction
+            case inr h₄ => exact List.mem_cons.mpr $ Or.inr h₄
+        have prf₁ := ih l₁
+        have l₂ : ({Form.conjoinList f tail} : Ctx) ⊆ {head, Form.conjoinList f tail} := by simp
+        have prf₂ := BProof.monotone l₂ prf₁
+        exact BProof.adjoinPremises prf₂
+      case isTrue h₂ =>
+        rw [h₂]
+        have l₂ : head ∈ ({head, Form.conjoinList f tail} : Ctx) := by simp
+        have prf₁ := BProof.ax l₂
+        exact BProof.adjoinPremises prf₁
 
 theorem BProof.compactness { Γ : Ctx } { f : Form } : BProof Γ f → Σs : Finset Form, Σ'_ : ↑s ⊆ Γ,  BProof ↑s f := by
   intros prf₁; induction prf₁
