@@ -60,7 +60,7 @@ def BProof.proveList { l : List Form } { f : Form } { Γ : Ctx } : f ∈ Γ → 
     have l₃ : head ∈ head :: tail := by simp
     exact BProof.adj (BProof.ax $ h₂ l₃) prf₁ 
 
-def BProof.proveFromList { l : List Form } { f : Form } { Γ : Ctx } : g ∈ f :: l → BProof {Form.conjoinList f l} g := by
+def BProof.proveFromList { l : List Form } { f : Form } : g ∈ f :: l → BProof {Form.conjoinList f l} g := by
   intros h₁
   induction l
   case nil =>
@@ -124,6 +124,12 @@ theorem BProof.compactness { Γ : Ctx } { f : Form } : BProof Γ f → Σs : Fin
       case inr h₄ => exact h₂ h₄
     rw [←Finset.coe_union] at prf₅
     exact ⟨↑(fin₁ ∪ fin₂), l₁, prf₅⟩
+
+theorem BProof.listCompactness { l : List Form } { f : Form } {g : Form} : BProof {h : Form | h = f ∨ h ∈ l } g → BProof {Form.conjoinList f l} g  := by
+  intros prf₁; induction prf₁
+  case ax p h₁ => exact BProof.proveFromList $ List.mem_cons.mpr h₁
+  case mp p q _ prf₂ ih => exact BProof.mp ih prf₂
+  case adj p q _ _ prf₁ prf₂  => exact BProof.adj prf₁ prf₂
 
 def BTheorem.transitivity (h₁ : BTheorem (p ⊃ q)) (h₂ : BTheorem (q ⊃ r)) : BTheorem (p ⊃ r) :=
   mp taut (hs h₁ h₂) 
