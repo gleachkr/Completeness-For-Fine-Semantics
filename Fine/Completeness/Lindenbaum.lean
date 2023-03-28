@@ -93,6 +93,12 @@ lemma lindenbaumSequenceMonotone { t : Th } { Δ : Ctx } : Monotone (lindenbaumS
 
 def lindenbaumExtension (t : Th) (Δ : Ctx) : Ctx := {f | ∃ij : Nat × Nat, f ∈ lindenbaumSequence t Δ ij }
 
+lemma lindenbaumStageMonotone { t : Th } { Δ : Ctx } { i : Nat } : Monotone (λj => lindenbaumSequence t Δ ⟨i,j⟩) := by
+  intros a b h₁
+  change lindenbaumSequence t Δ (i, a) ≤ lindenbaumSequence t Δ (i, b)
+  have l₂ := (Prod.Lex.le_iff (i, a) (i,b)).mpr $ Or.inr ⟨rfl,h₁⟩
+  exact lindenbaumSequenceMonotone' (i,b) (i,a) l₂
+
 lemma lindenbaumExtensionExtends { t : Th } { Δ : Ctx } : t.val ⊆ lindenbaumExtension t Δ := by
   intros f h₁
   refine ⟨⟨0,0⟩,?_⟩
@@ -191,7 +197,12 @@ theorem lindenbaumAvoids { t : Th } { Δ : Ctx } { h₁ : ↑t ∩ Δ = ∅ } { 
     intros h₃
     have ⟨w,⟨prf₁⟩,l₁⟩ := h₃
     clear h₃
-    sorry
+    have ⟨s,l₂,prf₂⟩ := BProof.compactness prf₁
+    have ⟨j, l₃⟩ := finiteExhaustion lindenbaumStageMonotone l₂
+    have l₄ := @lindenbaumAvoids t Δ h₁ h₂ ⟨i,j⟩
+    have prf₃ := BProof.monotone l₃ prf₂ 
+    have l₅ := Set.not_nonempty_iff_eq_empty.mpr l₄
+    exact l₅ ⟨w, ⟨⟨prf₃⟩,l₁⟩⟩
   | ⟨i, j + 1⟩ => by
     apply Set.not_nonempty_iff_eq_empty.mp
     intros h₃
