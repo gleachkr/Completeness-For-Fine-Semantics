@@ -179,21 +179,23 @@ theorem lindenbaumIsPrime { t : Th } { Δ : Ctx } : PrimeTheory (lindenbaumExten
   case left => intros h₁; exact Or.inl ⟨⟨i+1,k+1⟩,h₁⟩
   case right => intros h₁; exact Or.inr ⟨⟨i+1,k+1⟩,h₁⟩
 
-theorem lindenbaumAvoids { t : Th } { Δ : Ctx } { h₁ : ↑t ∩ Δ = ∅ } { h₂ : DisjunctionClosed Δ } : ∀ij, lindenbaumSequence t Δ ij ∩ Δ = ∅ 
-  | ⟨0,0⟩ => by exact h₁
+theorem lindenbaumAvoids { t : Th } { Δ : Ctx } { h₁ : ↑t ∩ Δ = ∅ } { h₂ : DisjunctionClosed Δ } : ∀ij, ▲lindenbaumSequence t Δ ij ∩ Δ = ∅ 
+  | ⟨0,0⟩ => by
+    have l₁ := formalFixed t.property
+    rw [←l₁] at h₁
+    exact h₁
   | ⟨i + 1, 0⟩ => by
-    change 
-      { f : Form | ∃j : Nat, f ∈ lindenbaumSequence t Δ ⟨i, j⟩ } ∩ Δ = ∅
+    change
+      ▲{ f : Form | ∃j : Nat, f ∈ lindenbaumSequence t Δ ⟨i, j⟩ } ∩ Δ = ∅
     apply Set.not_nonempty_iff_eq_empty.mp
     intros h₃
-    have ⟨w,⟨j,l₂⟩,l₁⟩ := h₃
+    have ⟨w,⟨prf₁⟩,l₁⟩ := h₃
     clear h₃
-    have l₃ := @lindenbaumAvoids t Δ h₁ h₂ ⟨i,j⟩
-    exact (Set.not_nonempty_iff_eq_empty.mpr l₃) ⟨w, l₂, l₁⟩
+    sorry
   | ⟨i, j + 1⟩ => by
     apply Set.not_nonempty_iff_eq_empty.mp
     intros h₃
-    have ⟨w,l₁,l₂⟩ := h₃
+    have ⟨w₁,l₁,l₂⟩ := h₃
     unfold lindenbaumSequence at l₁
     split at l₁
     case h_1 x heq => injection heq with heq; contradiction
@@ -207,55 +209,15 @@ theorem lindenbaumAvoids { t : Th } { Δ : Ctx } { h₁ : ↑t ∩ Δ = ∅ } { 
       split at l₁
       case inr h₄ =>
         have l₃ := @lindenbaumAvoids t Δ h₁ h₂ ⟨i,j⟩
-        exact (Set.not_nonempty_iff_eq_empty.mpr l₃) ⟨w, l₁, l₂⟩
+        exact (Set.not_nonempty_iff_eq_empty.mpr l₃) ⟨w₁, l₁, l₂⟩
       case inl h₄ =>
         split at l₁
-        all_goals
-          cases l₁
-          case inl h₆ => 
-            have l₃ := @lindenbaumAvoids t Δ h₁ h₂ ⟨i,j⟩
-            exact (Set.not_nonempty_iff_eq_empty.mpr l₃) ⟨w, h₆, l₂⟩
-          rename_i h₅ h₆
-          rw [←h₆] at h₄
-        case inl => 
-          rw [←h₆] at h₅
-          have l₃ : w ∈ ▲(lindenbaumSequence t Δ (i,j) ∪ {w}) := ⟨BProof.ax (Or.inr $ rfl)⟩
-          exact Set.not_nonempty_iff_eq_empty.mpr h₅ $ ⟨w,l₃,l₂⟩
-        case inr =>
+        case inl h₅ => exact (Set.not_nonempty_iff_eq_empty.mpr h₅) ⟨w₁, l₁, l₂⟩
+        case inr h₅ =>
           have l₃ := @lindenbaumAvoids t Δ h₁ h₂ ⟨i,j⟩
-          have ⟨x,⟨prf₁⟩,l₅⟩ := Set.nonempty_iff_ne_empty.mpr h₅
-          have ⟨prf₂⟩ := h₄
-          clear h₄ h₅ h₆
-          let k := (Denumerable.ofNat (Form × Form) (j + 0)).fst
-          --silly workaround because changeAt doesn't work
-          have triv_eq : (Denumerable.ofNat (Form × Form) (j + 0)).fst = k := rfl
-          rw [triv_eq] at prf₁
-          rw [triv_eq] at prf₂
-          clear triv_eq
-          have l₆ : x¦w ∈ Δ := h₂ ⟨l₅,l₂⟩
-          clear l₂ l₅ h₂
-          have ⟨s₁,l₇,prf₃⟩ := BProof.compactness prf₁
-          let s₂ := Finset.erase s₁ k
-          have l₈ : ↑s₂ ⊆ lindenbaumSequence t Δ (i,j) := by
-            intros f h₇
-            rw [Finset.coe_erase k s₁] at h₇
-            cases l₇ h₇.left
-            case inl => assumption
-            case inr h₈ => exact False.elim (h₇.right h₈)
-          have l₉ : s₁ ⊆ s₂ ∪ {k} := by
-            intros f h₇
-            cases decEq f k
-            case isTrue h₈ => 
-              rw [h₈]
-              exact Finset.mem_union.mpr $ Or.inr $ Finset.mem_singleton.mpr rfl
-            case isFalse h₈ =>
-              exact Finset.mem_union.mpr $ Or.inl $ Finset.mem_erase.mpr ⟨h₈, h₇⟩
-          have prf₄ := BProof.monotone (Finset.coe_subset.mpr l₉) prf₃
-          clear l₉ l₇ prf₃
-          -- sketch: 
-          -- 1. get a theorem t ∧ k → x, for t ⊣ LBS (new general Hilbert-level lemma)
-          -- 2. get LBS ⊢ t ∧ k ¦ t ∧ w, by distributivity.
-          -- 3. get LBS ⊢ x ¦ w , by or-elim
-          -- 4. contradiction via l₃ l₆
+          have ⟨prf₁⟩ := l₁
+          have ⟨w₂,⟨⟨prf₂⟩,l₄⟩⟩ := Set.nonempty_iff_ne_empty.mpr h₅
+          have l₅ : w₁¦w₂ ∈ Δ := h₂ ⟨l₂, l₄⟩
+          clear l₁ l₂ l₄ h₅
           sorry
   termination_by lindenbaumAvoids _ _ _ _ p => (p.fst, p.snd)
