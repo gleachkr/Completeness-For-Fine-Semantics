@@ -32,105 +32,6 @@ open BTheorem
 
 variable {p q r s : Form} 
 
-def BProof.monotone { f : Form } { Γ : Ctx } { Δ : Ctx } (mono: Γ ⊆ Δ ) : BProof Γ f → BProof Δ f
-  | ax h₁ => ax (mono h₁)
-  | mp prf₁ thm₂ => mp (monotone mono prf₁) thm₂
-  | adj prf₁ prf₂ => adj (monotone mono prf₁) (monotone mono prf₂)
-
-def BProof.adjoinPremises { p q r : Form } : BProof {p,q} r → BProof {p & q} r
-  | ax h => if c₁ : r = p then by
-              rw [c₁]
-              exact mp (ax rfl : BProof {p&q} (p&q)) andE₁
-            else if c₂ : r = q then by
-              rw [c₂]
-              exact mp (ax rfl : BProof {p&q} (p&q)) andE₂
-            else False.elim (Or.elim h c₁ c₂)
-  | mp h₁ h₂ => mp (adjoinPremises h₁) h₂
-  | adj h₁ h₂ => adj (adjoinPremises h₁) (adjoinPremises h₂)
-
-def BProof.proveList { l : List Form } { f : Form } { Γ : Ctx } : f ∈ Γ → { g | g ∈ l } ⊆ Γ → BProof Γ (Form.conjoinList f l) := by
-  intros h₁ h₂
-  induction l
-  case nil => exact BProof.ax h₁
-  case cons head tail ih =>
-    have l₂ : { g | g ∈ tail } ⊆ Γ := by
-      intros g h₁
-      exact h₂ $ List.mem_cons.mpr $ Or.inr h₁
-    have prf₁ := ih l₂
-    have l₃ : head ∈ head :: tail := by simp
-    exact BProof.adj (BProof.ax $ h₂ l₃) prf₁ 
-
-def BProof.proveFromList { l : List Form } { f : Form } : g ∈ f :: l → BProof {Form.conjoinList f l} g := by
-  intros h₁
-  induction l
-  case nil =>
-    have l₁ : g = f := by
-      cases List.mem_cons.mp h₁
-      . assumption
-      . contradiction
-    rw [l₁]
-    have l₂ : f ∈ ({f} : Ctx) := rfl
-    exact BProof.ax l₂
-  case cons head tail ih =>
-      cases decEq g head
-      case isFalse h₂ =>
-        have l₁ : g ∈ f :: tail := by
-          cases List.mem_cons.mp h₁
-          case inl h₃ => exact List.mem_cons.mpr $ Or.inl h₃
-          case inr h₃ => 
-            cases List.mem_cons.mp h₃
-            case inl => contradiction
-            case inr h₄ => exact List.mem_cons.mpr $ Or.inr h₄
-        have prf₁ := ih l₁
-        have l₂ : ({Form.conjoinList f tail} : Ctx) ⊆ {head, Form.conjoinList f tail} := by simp
-        have prf₂ := BProof.monotone l₂ prf₁
-        exact BProof.adjoinPremises prf₂
-      case isTrue h₂ =>
-        rw [h₂]
-        have l₂ : head ∈ ({head, Form.conjoinList f tail} : Ctx) := by simp
-        have prf₁ := BProof.ax l₂
-        exact BProof.adjoinPremises prf₁
-
-theorem BProof.compactness { Γ : Ctx } { f : Form } : BProof Γ f → Σs : Finset Form, Σ'_ : ↑s ⊆ Γ,  BProof ↑s f := by
-  intros prf₁; induction prf₁
-  case ax g h₁ => 
-    let Gsing : Finset Form := {g} 
-    have l₁ : g ∈ {g} := Finset.mem_singleton.mpr rfl
-    have l₂ : Gsing = ({g} : Ctx) := Finset.coe_singleton g
-    have l₃ : ↑Gsing ⊆ Γ := by
-      intros g' h₂
-      rw [l₂] at h₂
-      rw [h₂]
-      assumption
-    have prf₂ : BProof ↑{g} g := by
-      rw [←l₂]
-      apply ax l₁
-    rw [←l₂] at prf₂
-    exact ⟨Gsing, l₃, prf₂⟩
-  case mp P Q _ h₂ ih => 
-    have ⟨fin, h₁, prf⟩ := ih
-    exact ⟨fin, h₁, mp prf h₂⟩
-  case adj P Q _ _ ih₁ ih₂ => 
-    have ⟨fin₁, h₁, prf₁⟩ := ih₁
-    have ⟨fin₂, h₂, prf₂⟩ := ih₂
-    have prf₃ : BProof (↑fin₁ ∪ ↑fin₂) P := BProof.monotone (Set.subset_union_left ↑fin₁ ↑fin₂) prf₁
-    have prf₄ : BProof (↑fin₁ ∪ ↑fin₂) Q := BProof.monotone (Set.subset_union_right ↑fin₁ ↑fin₂) prf₂
-    have prf₅ := adj prf₃ prf₄
-    have l₁ : ↑(fin₁ ∪ fin₂) ⊆ Γ := by
-      intros f h₃
-      rw [Finset.coe_union] at h₃
-      cases h₃
-      case inl h₄ => exact h₁ h₄
-      case inr h₄ => exact h₂ h₄
-    rw [←Finset.coe_union] at prf₅
-    exact ⟨↑(fin₁ ∪ fin₂), l₁, prf₅⟩
-
-theorem BProof.listCompactness { l : List Form } { f : Form } {g : Form} : BProof {h : Form | h = f ∨ h ∈ l } g → BProof {Form.conjoinList f l} g  := by
-  intros prf₁; induction prf₁
-  case ax p h₁ => exact BProof.proveFromList $ List.mem_cons.mpr h₁
-  case mp p q _ prf₂ ih => exact BProof.mp ih prf₂
-  case adj p q _ _ prf₁ prf₂  => exact BProof.adj prf₁ prf₂
-
 def BTheorem.transitivity (h₁ : BTheorem (p ⊃ q)) (h₂ : BTheorem (q ⊃ r)) : BTheorem (p ⊃ r) :=
   mp taut (hs h₁ h₂) 
 
@@ -175,5 +76,118 @@ example : BTheorem ((p ⊃ q) ⊃ (p ⊃ (q ¦ r))) :=
 
 example : BTheorem ((p ⊃ q) ⊃ (p & r ⊃ q)) :=
   hs andE₁ taut
+
+def BProof.monotone { f : Form } { Γ : Ctx } { Δ : Ctx } (mono: Γ ⊆ Δ ) : BProof Γ f → BProof Δ f
+  | ax h₁ => ax (mono h₁)
+  | mp prf₁ thm₂ => mp (monotone mono prf₁) thm₂
+  | adj prf₁ prf₂ => adj (monotone mono prf₁) (monotone mono prf₂)
+
+def BProof.adjoinPremises { p q r : Form } : BProof {p,q} r → BProof {p & q} r
+  | ax h => if c₁ : r = p then by
+              rw [c₁]
+              exact mp (ax rfl : BProof {p&q} (p&q)) andE₁
+            else if c₂ : r = q then by
+              rw [c₂]
+              exact mp (ax rfl : BProof {p&q} (p&q)) andE₂
+            else False.elim (Or.elim h c₁ c₂)
+  | mp h₁ h₂ => mp (adjoinPremises h₁) h₂
+  | adj h₁ h₂ => adj (adjoinPremises h₁) (adjoinPremises h₂)
+
+def BProof.proveList { l : List Form } { f : Form } { Γ : Ctx } : f ∈ Γ → { g | g ∈ l } ⊆ Γ → BProof Γ (Form.conjoinList f l) := by
+  intros h₁ h₂
+  induction l
+  case nil => exact BProof.ax h₁
+  case cons head tail ih =>
+    have l₂ : { g | g ∈ tail } ⊆ Γ := by
+      intros g h₁
+      exact h₂ $ List.mem_cons.mpr $ Or.inr h₁
+    have prf₁ := ih l₂
+    have l₃ : head ∈ head :: tail := by simp
+    have prf₂ : BProof Γ head := BProof.ax $ h₂ l₃
+    cases tail
+    case nil => exact BProof.adj prf₁ prf₂ 
+    case cons head' tail' => 
+      have prf₃ := BProof.mp prf₁ BTheorem.andE₁
+      have prf₄ := BProof.mp prf₁ BTheorem.andE₂
+      exact BProof.adj prf₃ (BProof.adj prf₂ prf₄)
+
+def BProof.proveFromList { l : List Form } { f : Form } : g ∈ f :: l → BProof {Form.conjoinList f l} g := by
+  intros h₁
+  induction l
+  case nil =>
+    have l₁ : g = f := by
+      cases List.mem_cons.mp h₁
+      . assumption
+      . contradiction
+    rw [l₁]
+    have l₂ : f ∈ ({f} : Ctx) := rfl
+    exact BProof.ax l₂
+  case cons head tail ih =>
+      cases decEq g head
+      case isFalse h₂ =>
+        have l₁ : g ∈ f :: tail := by
+          cases List.mem_cons.mp h₁
+          case inl h₃ => exact List.mem_cons.mpr $ Or.inl h₃
+          case inr h₃ => 
+            cases List.mem_cons.mp h₃
+            case inl => contradiction
+            case inr h₄ => exact List.mem_cons.mpr $ Or.inr h₄
+        have prf₁ := ih l₁
+        cases tail
+        case nil => 
+          have prf₂ : BProof {Form.conjoinList f [head]} f := BProof.mp (BProof.ax rfl) BTheorem.andE₁
+          exact BProof.mp prf₂ (BTheorem.fromProof prf₁)
+        case cons head' tail' =>
+          have prf₂ : BProof {Form.conjoinList f (head :: head' :: tail')} (Form.conjoinList f (head' :: tail')) := by
+            exact BProof.adj (BProof.mp (BProof.ax rfl) BTheorem.andE₁) (BProof.mp (BProof.mp (BProof.ax rfl) BTheorem.andE₂) BTheorem.andE₂)
+          exact BProof.mp prf₂ (BTheorem.fromProof prf₁)
+      case isTrue h₂ =>
+        rw [h₂]
+        have l₂ : head ∈ ({head, Form.conjoinList f tail} : Ctx) := by simp
+        have prf₁ := BProof.ax l₂
+        have prf₂ := BProof.adjoinPremises prf₁
+        cases tail
+        case nil => exact BProof.mp (BProof.ax rfl) BTheorem.andE₂
+        case cons head' tail' => exact BProof.mp (BProof.mp (BProof.ax rfl) BTheorem.andE₂) BTheorem.andE₁
+
+theorem BProof.compactness { Γ : Ctx } { f : Form } : BProof Γ f → Σs : Finset Form, Σ'_ : ↑s ⊆ Γ,  BProof ↑s f := by
+  intros prf₁; induction prf₁
+  case ax g h₁ => 
+    let Gsing : Finset Form := {g} 
+    have l₁ : g ∈ {g} := Finset.mem_singleton.mpr rfl
+    have l₂ : Gsing = ({g} : Ctx) := Finset.coe_singleton g
+    have l₃ : ↑Gsing ⊆ Γ := by
+      intros g' h₂
+      rw [l₂] at h₂
+      rw [h₂]
+      assumption
+    have prf₂ : BProof ↑{g} g := by
+      rw [←l₂]
+      apply ax l₁
+    rw [←l₂] at prf₂
+    exact ⟨Gsing, l₃, prf₂⟩
+  case mp P Q _ h₂ ih => 
+    have ⟨fin, h₁, prf⟩ := ih
+    exact ⟨fin, h₁, mp prf h₂⟩
+  case adj P Q _ _ ih₁ ih₂ => 
+    have ⟨fin₁, h₁, prf₁⟩ := ih₁
+    have ⟨fin₂, h₂, prf₂⟩ := ih₂
+    have prf₃ : BProof (↑fin₁ ∪ ↑fin₂) P := BProof.monotone (Set.subset_union_left ↑fin₁ ↑fin₂) prf₁
+    have prf₄ : BProof (↑fin₁ ∪ ↑fin₂) Q := BProof.monotone (Set.subset_union_right ↑fin₁ ↑fin₂) prf₂
+    have prf₅ := adj prf₃ prf₄
+    have l₁ : ↑(fin₁ ∪ fin₂) ⊆ Γ := by
+      intros f h₃
+      rw [Finset.coe_union] at h₃
+      cases h₃
+      case inl h₄ => exact h₁ h₄
+      case inr h₄ => exact h₂ h₄
+    rw [←Finset.coe_union] at prf₅
+    exact ⟨↑(fin₁ ∪ fin₂), l₁, prf₅⟩
+
+theorem BProof.listCompactness { l : List Form } { f : Form } {g : Form} : BProof {h : Form | h = f ∨ h ∈ l } g → BProof {Form.conjoinList f l} g  := by
+  intros prf₁; induction prf₁
+  case ax p h₁ => exact BProof.proveFromList $ List.mem_cons.mpr h₁
+  case mp p q _ prf₂ ih => exact BProof.mp ih prf₂
+  case adj p q _ _ prf₁ prf₂  => exact BProof.adj prf₁ prf₂
 
 end

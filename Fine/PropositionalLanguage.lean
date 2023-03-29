@@ -97,4 +97,4 @@ instance instMembership : Membership Form Ctx where
 
 def Form.conjoinList (f : Form) : List Form → Form
   | [] => f
-  | a :: as => a & Form.conjoinList f as
+  | a :: as => f & Form.conjoinList a as
