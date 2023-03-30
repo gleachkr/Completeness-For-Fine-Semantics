@@ -184,10 +184,31 @@ theorem BProof.compactness { Γ : Ctx } { f : Form } : BProof Γ f → Σs : Fin
     rw [←Finset.coe_union] at prf₅
     exact ⟨↑(fin₁ ∪ fin₂), l₁, prf₅⟩
 
-theorem BProof.listCompactness { l : List Form } { f : Form } {g : Form} : BProof {h : Form | h = f ∨ h ∈ l } g → BProof {Form.conjoinList f l} g  := by
+theorem BProof.listCompression { l : List Form } { f : Form } {g : Form} : BProof {h : Form | h = f ∨ h ∈ l } g → BProof {Form.conjoinList f l} g  := by
   intros prf₁; induction prf₁
   case ax p h₁ => exact BProof.proveFromList $ List.mem_cons.mpr h₁
   case mp p q _ prf₂ ih => exact BProof.mp ih prf₂
   case adj p q _ _ prf₁ prf₂  => exact BProof.adj prf₁ prf₂
 
+theorem BProof.sentenceCompactness { Γ : Ctx } { f g : Form } : BProof (insert f Γ) g → Σl : List Form, Σ'_ : {x | x ∈ l} ⊆ Γ,  BProof {Form.conjoinList f l} g := by
+  intros h₁
+  have ⟨s₁,h₂,prf₁⟩ := BProof.compactness h₁
+  let lst₁ := (Finset.erase s₁ f).toList
+  have l₁ : ↑s₁ ⊆ {h : Form | h = f ∨ h ∈ lst₁} := by
+    intros k h₂
+    cases decEq f k
+    case isTrue h₃ => rw [h₃]; exact Or.inl rfl
+    case isFalse h₃ => 
+      have l₂ : k ∈ lst₁ := by
+        apply Finset.mem_toList.mpr
+        exact Finset.mem_erase.mpr ⟨h₃ ∘ Eq.symm, h₂⟩
+      exact Or.inr l₂
+  have prf₂ := BProof.listCompression $  BProof.monotone l₁ prf₁
+  refine ⟨lst₁,?_,prf₂⟩
+  intros k h₃
+  have : k ∈ Finset.erase s₁ f := Finset.mem_toList.mp h₃
+  have ⟨l₅,l₆⟩: k ≠ f ∧ k ∈ s₁ := Finset.mem_erase.mp this
+  have : k ∈ insert f Γ := h₂ $ Finset.mem_coe.mpr l₆
+  exact Set.mem_of_mem_insert_of_ne this l₅ 
+    
 end
