@@ -41,6 +41,16 @@ def BTheorem.transitivityLeft (h : BTheorem (p ⊃ q)) : BTheorem ((q ⊃ r) ⊃
 def BTheorem.transitivityRight (h : BTheorem (p ⊃ q)) : BTheorem ((r ⊃ p) ⊃ (r ⊃ q)) :=
   hs taut h
 
+def BTheorem.commAnd : BTheorem (q & p ⊃ p & q) :=
+  BTheorem.mp (BTheorem.adj BTheorem.andE₂ BTheorem.andE₁) BTheorem.andI
+
+def BTheorem.distRight : BTheorem ((q ¦ r) & p ⊃ (q & p) ¦ (r & p)) :=
+  have l₁ : BTheorem ((q ¦ r) & p ⊃ (p & q) ¦ (p & r)) := BTheorem.transitivity BTheorem.commAnd BTheorem.dist
+  have l₂ : BTheorem ((p & q) ¦ (p & r) ⊃ (q & p) ¦ (r & p)) := BTheorem.mp 
+     (BTheorem.adj (BTheorem.transitivity BTheorem.commAnd BTheorem.orI₁) (BTheorem.transitivity BTheorem.commAnd BTheorem.orI₂))
+     BTheorem.orE
+  BTheorem.transitivity l₁ l₂
+
 def BTheorem.demorgansLaw1 : BTheorem ((p & q) ⊃ ~(~p ¦ ~q)) := 
   have l₁ : ∀{r : Form}, BTheorem (r ⊃ ~~r) := cp taut
   have l₂ : BTheorem (~p ⊃ ~(p & q)) := cp $ mp taut (hs andE₁ l₁)
