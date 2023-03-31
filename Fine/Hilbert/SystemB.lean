@@ -93,23 +93,25 @@ def BProof.adjoinPremises { p q r : Form } : BProof {p,q} r → BProof {p & q} r
   | mp h₁ h₂ => mp (adjoinPremises h₁) h₂
   | adj h₁ h₂ => adj (adjoinPremises h₁) (adjoinPremises h₂)
 
-def BProof.proveList { l : List Form } { f : Form } { Γ : Ctx } : f ∈ Γ → { g | g ∈ l } ⊆ Γ → BProof Γ (Form.conjoinList f l) := by
-  intros h₁ h₂
+def BProof.proveList { l : List Form } { f : Form } { Γ : Ctx } : { g | g ∈ f :: l } ⊆ Γ → BProof Γ (Form.conjoinList f l) := by
+  intros h₁
   induction l
-  case nil => exact BProof.ax h₁
+  case nil => 
+    exact BProof.ax (h₁ $ List.mem_singleton.mpr rfl)
   case cons head tail ih =>
-    have l₂ : { g | g ∈ tail } ⊆ Γ := by
-      intros g h₁
-      exact h₂ $ List.mem_cons.mpr $ Or.inr h₁
+    have l₂ : { g | g ∈ f :: tail } ⊆ Γ := by
+      intros g h₂
+      cases h₂
+      case head => exact h₁ $ List.mem_cons.mpr $ Or.inl rfl
+      case tail h₃ => exact h₁ $ List.mem_cons.mpr $ Or.inr $ List.mem_cons.mpr $ Or.inr h₃
     have prf₁ := ih l₂
-    have l₃ : head ∈ head :: tail := by simp
-    have prf₂ : BProof Γ head := BProof.ax $ h₂ l₃
+    have prf₂ := BProof.ax $ h₁ $ List.mem_cons.mpr $ Or.inr $ List.mem_cons.mpr $ Or.inl rfl
     cases tail
-    case nil => exact BProof.adj prf₁ prf₂ 
+    case nil => exact BProof.adj prf₁ prf₂
     case cons head' tail' => 
       have prf₃ := BProof.mp prf₁ BTheorem.andE₁
       have prf₄ := BProof.mp prf₁ BTheorem.andE₂
-      exact BProof.adj prf₃ (BProof.adj prf₂ prf₄)
+      exact BProof.adj prf₃ $ BProof.adj prf₂ prf₄
 
 def BProof.proveFromList { l : List Form } { f : Form } : g ∈ f :: l → BProof {Form.conjoinList f l} g := by
   intros h₁
@@ -143,9 +145,6 @@ def BProof.proveFromList { l : List Form } { f : Form } : g ∈ f :: l → BProo
           exact BProof.mp prf₂ (BTheorem.fromProof prf₁)
       case isTrue h₂ =>
         rw [h₂]
-        have l₂ : head ∈ ({head, Form.conjoinList f tail} : Ctx) := by simp
-        have prf₁ := BProof.ax l₂
-        have prf₂ := BProof.adjoinPremises prf₁
         cases tail
         case nil => exact BProof.mp (BProof.ax rfl) BTheorem.andE₂
         case cons head' tail' => exact BProof.mp (BProof.mp (BProof.ax rfl) BTheorem.andE₂) BTheorem.andE₁
