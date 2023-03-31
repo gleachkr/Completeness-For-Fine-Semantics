@@ -185,7 +185,7 @@ theorem lindenbaumIsPrime { t : Th } { Δ : Ctx } : PrimeTheory (lindenbaumExten
   case left => intros h₁; exact Or.inl ⟨⟨i+1,k+1⟩,h₁⟩
   case right => intros h₁; exact Or.inr ⟨⟨i+1,k+1⟩,h₁⟩
 
-theorem lindenbaumAvoids { t : Th } { Δ : Ctx } { h₁ : ↑t ∩ Δ = ∅ } { h₂ : DisjunctionClosed Δ } : ∀ij, ▲lindenbaumSequence t Δ ij ∩ Δ = ∅ 
+theorem lindenbaumAvoids { t : Th } { Δ : Ctx } ( h₁ : ↑t ∩ Δ = ∅ ) ( h₂ : DisjunctionClosed Δ ) : ∀ij, ▲lindenbaumSequence t Δ ij ∩ Δ = ∅ 
   | ⟨0,0⟩ => by
     have l₁ := formalFixed t.property
     rw [←l₁] at h₁
@@ -199,7 +199,7 @@ theorem lindenbaumAvoids { t : Th } { Δ : Ctx } { h₁ : ↑t ∩ Δ = ∅ } { 
     clear h₃
     have ⟨s,l₂,prf₂⟩ := BProof.compactness prf₁
     have ⟨j, l₃⟩ := finiteExhaustion lindenbaumStageMonotone l₂
-    have l₄ := @lindenbaumAvoids t Δ h₁ h₂ ⟨i,j⟩
+    have l₄ := lindenbaumAvoids h₁ h₂ ⟨i,j⟩
     have prf₃ := BProof.monotone l₃ prf₂ 
     have l₅ := Set.not_nonempty_iff_eq_empty.mpr l₄
     exact l₅ ⟨w, ⟨⟨prf₃⟩,l₁⟩⟩
@@ -212,23 +212,72 @@ theorem lindenbaumAvoids { t : Th } { Δ : Ctx } { h₁ : ↑t ∩ Δ = ∅ } { 
     case h_1 x heq => injection heq with heq; contradiction
     case h_2 x heq => injection heq with heq; contradiction
     case h_3 x n m heq =>
+      have l₃ := lindenbaumAvoids h₁ h₂ ⟨i,j⟩
       injection heq with heq₁ heq₂
       injection heq₂ with heq₂
       rw [←heq₁,←heq₂] at l₁
       clear n m x heq₁ heq₂ h₃
-      dsimp at l₁ 
+      dsimp at l₁ j
       split at l₁
-      case inr h₄ =>
-        have l₃ := @lindenbaumAvoids t Δ h₁ h₂ ⟨i,j⟩
-        exact (Set.not_nonempty_iff_eq_empty.mpr l₃) ⟨w₁, l₁, l₂⟩
+      case inr h₄ => exact (Set.not_nonempty_iff_eq_empty.mpr l₃) ⟨w₁, l₁, l₂⟩
       case inl h₄ =>
         split at l₁
         case inl h₅ => exact (Set.not_nonempty_iff_eq_empty.mpr h₅) ⟨w₁, l₁, l₂⟩
         case inr h₅ =>
-          have l₃ := @lindenbaumAvoids t Δ h₁ h₂ ⟨i,j⟩
           have ⟨prf₁⟩ := l₁
           have ⟨w₂,⟨⟨prf₂⟩,l₄⟩⟩ := Set.nonempty_iff_ne_empty.mpr h₅
           have l₅ : w₁¦w₂ ∈ Δ := h₂ ⟨l₂, l₄⟩
           clear l₁ l₂ l₄ h₅
-          sorry
+          have ⟨lst₁,l₆,prf₃⟩ := BProof.sentenceCompactness (Set.union_singleton ▸ prf₁)
+          have ⟨lst₂,l₇,prf₄⟩ := BProof.sentenceCompactness (Set.union_singleton ▸ prf₂)
+          have thm₁ := BTheorem.transitivity (BTheorem.fromProof prf₃) (BTheorem.orI₁ : BTheorem (w₁ ⊃ w₁ ¦ w₂))
+          have thm₂ := BTheorem.transitivity (BTheorem.fromProof prf₄) (BTheorem.orI₂ : BTheorem (w₂ ⊃ w₁ ¦ w₂))
+          have thm₃ := BTheorem.mp (BTheorem.adj thm₂ thm₁) BTheorem.orE 
+          have ⟨prf₅⟩ := h₄
+          clear h₄ thm₁ thm₂ prf₁ prf₂ prf₃ prf₄
+          cases lst₁
+          all_goals 
+            cases lst₂
+          case nil.nil =>
+            have : w₁¦w₂ ∈ ▲lindenbaumSequence t Δ (i, j) ∩ Δ := ⟨⟨BProof.mp prf₅ thm₃⟩, l₅⟩
+            exact (Set.not_nonempty_iff_eq_empty.mpr l₃) ⟨w₁¦w₂, this⟩
+          -- could simplify these with a new BTheorem def
+          case nil.cons head tail =>
+            have := BProof.proveList l₇
+            have := BProof.mp (BProof.adj prf₅ this) BTheorem.distRight
+            have := BProof.mp this (BTheorem.mp 
+              (BTheorem.adj 
+                (BTheorem.transitivity BTheorem.taut BTheorem.orI₁) 
+                (BTheorem.transitivity BTheorem.andE₁ BTheorem.orI₂)
+              ) BTheorem.orE)
+            have : w₁¦w₂ ∈ ▲lindenbaumSequence t Δ (i, j) ∩ Δ := ⟨⟨BProof.mp this thm₃⟩, l₅⟩
+            exact (Set.not_nonempty_iff_eq_empty.mpr l₃) ⟨w₁¦w₂, this⟩
+          case cons.nil head tail => 
+            have := BProof.proveList l₆
+            have := BProof.mp (BProof.adj prf₅ this) BTheorem.distRight
+            have := BProof.mp this (BTheorem.mp 
+              (BTheorem.adj 
+                (BTheorem.transitivity BTheorem.andE₁ BTheorem.orI₁) 
+                (BTheorem.transitivity BTheorem.taut BTheorem.orI₂)
+              ) BTheorem.orE)
+            have : w₁¦w₂ ∈ ▲lindenbaumSequence t Δ (i, j) ∩ Δ := ⟨⟨BProof.mp this thm₃⟩, l₅⟩
+            exact (Set.not_nonempty_iff_eq_empty.mpr l₃) ⟨w₁¦w₂, this⟩
+          case cons.cons head tail head' tail'=> 
+            have prf₆ := BProof.proveList l₆
+            have prf₇ := BProof.proveList l₇
+            have := BProof.mp (BProof.adj prf₅ prf₇) BTheorem.distRight
+            have prf₈ := BProof.mp this (BTheorem.mp 
+              (BTheorem.adj 
+                (BTheorem.transitivity BTheorem.taut BTheorem.orI₁) 
+                (BTheorem.transitivity BTheorem.andE₁ BTheorem.orI₂)
+              ) BTheorem.orE)
+            have := BProof.mp (BProof.adj prf₈ prf₆) BTheorem.distRight
+            have prf₉ := BProof.mp this (BTheorem.mp 
+              (BTheorem.adj 
+                (BTheorem.transitivity BTheorem.andE₁ BTheorem.orI₁) 
+                (BTheorem.transitivity BTheorem.taut BTheorem.orI₂)
+              ) BTheorem.orE)
+            have : w₁¦w₂ ∈ ▲lindenbaumSequence t Δ (i, j) ∩ Δ := ⟨⟨BProof.mp prf₉ thm₃⟩, l₅⟩
+            exact (Set.not_nonempty_iff_eq_empty.mpr l₃) ⟨w₁¦w₂, this⟩
+
   termination_by lindenbaumAvoids _ _ _ _ p => (p.fst, p.snd)
