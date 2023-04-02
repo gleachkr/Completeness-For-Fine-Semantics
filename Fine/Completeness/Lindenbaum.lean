@@ -238,45 +238,28 @@ theorem lindenbaumAvoids { t : Th } { Δ : Ctx } ( h₁ : ↑t ∩ Δ = ∅ ) ( 
           cases lst₁
           all_goals 
             cases lst₂
-          case nil.nil =>
+          case' nil.nil =>
             have : w₁¦w₂ ∈ ▲lindenbaumSequence t Δ (i, j) ∩ Δ := ⟨⟨BProof.mp prf₅ thm₃⟩, l₅⟩
             exact (Set.not_nonempty_iff_eq_empty.mpr l₃) ⟨w₁¦w₂, this⟩
-          -- could simplify these with a new BTheorem def
-          case nil.cons head tail =>
+          case' nil.cons head tail =>
             have := BProof.proveList l₇
             have := BProof.mp (BProof.adj prf₅ this) BTheorem.distRight
-            have := BProof.mp this (BTheorem.mp 
-              (BTheorem.adj 
-                (BTheorem.transitivity BTheorem.taut BTheorem.orI₁) 
-                (BTheorem.transitivity BTheorem.andE₁ BTheorem.orI₂)
-              ) BTheorem.orE)
+            have := BProof.mp this (BTheorem.orFunctor BTheorem.taut BTheorem.andE₁)
             have : w₁¦w₂ ∈ ▲lindenbaumSequence t Δ (i, j) ∩ Δ := ⟨⟨BProof.mp this thm₃⟩, l₅⟩
             exact (Set.not_nonempty_iff_eq_empty.mpr l₃) ⟨w₁¦w₂, this⟩
-          case cons.nil head tail => 
+          case' cons.nil head tail => 
             have := BProof.proveList l₆
             have := BProof.mp (BProof.adj prf₅ this) BTheorem.distRight
-            have := BProof.mp this (BTheorem.mp 
-              (BTheorem.adj 
-                (BTheorem.transitivity BTheorem.andE₁ BTheorem.orI₁) 
-                (BTheorem.transitivity BTheorem.taut BTheorem.orI₂)
-              ) BTheorem.orE)
+            have := BProof.mp this (BTheorem.orFunctor BTheorem.andE₁ BTheorem.taut)
             have : w₁¦w₂ ∈ ▲lindenbaumSequence t Δ (i, j) ∩ Δ := ⟨⟨BProof.mp this thm₃⟩, l₅⟩
             exact (Set.not_nonempty_iff_eq_empty.mpr l₃) ⟨w₁¦w₂, this⟩
-          case cons.cons head tail head' tail'=> 
+          case' cons.cons head tail head' tail'=> 
             have prf₆ := BProof.proveList l₆
             have prf₇ := BProof.proveList l₇
             have := BProof.mp (BProof.adj prf₅ prf₇) BTheorem.distRight
-            have prf₈ := BProof.mp this (BTheorem.mp 
-              (BTheorem.adj 
-                (BTheorem.transitivity BTheorem.taut BTheorem.orI₁) 
-                (BTheorem.transitivity BTheorem.andE₁ BTheorem.orI₂)
-              ) BTheorem.orE)
+            have prf₈ := BProof.mp this (BTheorem.orFunctor BTheorem.taut BTheorem.andE₁)
             have := BProof.mp (BProof.adj prf₈ prf₆) BTheorem.distRight
-            have prf₉ := BProof.mp this (BTheorem.mp 
-              (BTheorem.adj 
-                (BTheorem.transitivity BTheorem.andE₁ BTheorem.orI₁) 
-                (BTheorem.transitivity BTheorem.taut BTheorem.orI₂)
-              ) BTheorem.orE)
+            have prf₉ := BProof.mp this (BTheorem.orFunctor BTheorem.andE₁ BTheorem.taut)
             have : w₁¦w₂ ∈ ▲lindenbaumSequence t Δ (i, j) ∩ Δ := ⟨⟨BProof.mp prf₉ thm₃⟩, l₅⟩
             exact (Set.not_nonempty_iff_eq_empty.mpr l₃) ⟨w₁¦w₂, this⟩
 

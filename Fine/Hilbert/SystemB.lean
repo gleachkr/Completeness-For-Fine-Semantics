@@ -73,6 +73,13 @@ def BTheorem.demorgansLaw4 : BTheorem ((~p & ~q) ⊃ ~(p ¦ q)) :=
   have l₂ : BTheorem (q ⊃ ~(~p & ~q)) := cp andE₂
   cp (mp (adj l₁ l₂) orE)
 
+def BTheorem.orFunctor (thm₁ : BTheorem (p ⊃ q)) (thm₂ : BTheorem (r ⊃ s)) : BTheorem (p ¦ r ⊃ q ¦ s) := 
+      (BTheorem.mp 
+      (BTheorem.adj 
+        (BTheorem.transitivity thm₁ BTheorem.orI₁) 
+        (BTheorem.transitivity thm₂ BTheorem.orI₂)
+      ) BTheorem.orE)
+
 def BTheorem.fromProof { p q : Form } : BProof {p} q → BTheorem (p ⊃ q)
   | BProof.ax h => by rw [h]; exact taut
   | BProof.adj h₁ h₂ => mp (adj (fromProof h₁) (fromProof h₂)) andI
@@ -86,6 +93,8 @@ example : BTheorem ((p ⊃ q) ⊃ (p ⊃ (q ¦ r))) :=
 
 example : BTheorem ((p ⊃ q) ⊃ (p & r ⊃ q)) :=
   hs andE₁ taut
+
+
 
 def BProof.monotone { f : Form } { Γ : Ctx } { Δ : Ctx } (mono: Γ ⊆ Δ ) : BProof Γ f → BProof Δ f
   | ax h₁ => ax (mono h₁)
