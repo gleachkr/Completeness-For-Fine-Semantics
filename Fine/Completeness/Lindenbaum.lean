@@ -262,5 +262,13 @@ theorem lindenbaumAvoids { t : Th } { Δ : Ctx } ( h₁ : ↑t ∩ Δ = ∅ ) ( 
             have prf₉ := BProof.mp this (BTheorem.orFunctor BTheorem.andE₁ BTheorem.taut)
             have : w₁¦w₂ ∈ ▲lindenbaumSequence t Δ (i, j) ∩ Δ := ⟨⟨BProof.mp prf₉ thm₃⟩, l₅⟩
             exact (Set.not_nonempty_iff_eq_empty.mpr l₃) ⟨w₁¦w₂, this⟩
-
   termination_by lindenbaumAvoids _ _ _ _ p => (p.fst, p.snd)
+
+theorem lindenbaumTheorem { t : Th } { Δ : Ctx } ( h₁ : ↑t ∩ Δ = ∅ ) ( h₂ : DisjunctionClosed Δ ) : lindenbaumExtension t Δ ∩ Δ = ∅ := by
+  unfold lindenbaumExtension
+  apply Set.not_nonempty_iff_eq_empty.mp
+  intros h₃
+  have ⟨f, ⟨ij, h₄⟩, h₅⟩ := h₃
+  have l₁ := lindenbaumAvoids h₁ h₂ ij
+  have l₂ : f ∈ ▲lindenbaumSequence t Δ ij := ⟨BProof.ax h₄⟩
+  exact Set.not_nonempty_iff_eq_empty.mpr l₁ $ ⟨f, l₂, h₅⟩
