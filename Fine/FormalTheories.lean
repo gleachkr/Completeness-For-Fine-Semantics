@@ -74,13 +74,27 @@ lemma BisFormal : formalTheory BTheory := by
       have ⟨l₂⟩ := ih₂ ⟨prf₂⟩
       exact ⟨BTheorem.adj l₁ l₂⟩
 
-def FormalApplication (Γ : Ctx) (Δ : Ctx) : Ctx := λf : Form => ∃g : Form, g ∈ Δ ∧ (g ⊃ f) ∈ Γ
+def formalApplication (Γ : Ctx) (Δ : Ctx) : Ctx := λf : Form => ∃g : Form, g ∈ Δ ∧ (g ⊃ f) ∈ Γ
+
+theorem formalAppMonotoneLeft : ∀Γ : Ctx, Monotone (formalApplication Γ) := by
+  intros Γ
+  unfold Monotone
+  intros a b h₁ A h₂
+  have ⟨g,h₃⟩ := h₂
+  exact ⟨g, h₁ h₃.left, h₃.right⟩
+
+theorem formalAppMonotoneRight : ∀Γ : Ctx, Monotone (flip formalApplication Γ) := by
+  intros Γ
+  unfold Monotone
+  intros a b h₁ A h₂
+  have ⟨g,h₃⟩ := h₂
+  exact ⟨g, h₃.left, h₁ h₃.right⟩
   
 def formalApplicationFunction : Th → Th → Th
   | ⟨Δ, h₁⟩, ⟨Γ, h₂⟩ => by
     unfold Th; unfold formalTheory
     apply Subtype.mk
-    case val => exact FormalApplication Δ Γ
+    case val => exact formalApplication Δ Γ
     case property =>
       intros f
       apply Iff.intro
@@ -98,7 +112,7 @@ def formalApplicationFunction : Th → Th → Th
           have l₄ := h₁.mpr ⟨l₃⟩
           exact ⟨R, l₁.1, l₄⟩
         case adj h₃ P Q prf₁ prf₂ ih₁ ih₂ =>
-          unfold FormalApplication
+          unfold formalApplication
           have ⟨R, l₁⟩ := ih₁ ⟨prf₁⟩
           have prf₃ := BProof.ax l₁.2
           have ⟨S, l₂⟩ := ih₂ ⟨prf₂⟩
@@ -109,7 +123,7 @@ def formalApplicationFunction : Th → Th → Th
           have l₆ : BProof Γ (R & S) := BProof.adj (BProof.ax l₁.1) (BProof.ax l₂.1)
           exact ⟨R&S, h₃.mpr ⟨l₆⟩, h₁.mpr ⟨l₅⟩⟩
 
-example {Γ : Th} {Δ : Th} : FormalApplication Γ Δ = formalApplicationFunction Γ Δ := rfl
+example {Γ : Th} {Δ : Th} : formalApplication Γ Δ = formalApplicationFunction Γ Δ := rfl
 
 theorem formalStarFormal (Γ : Ctx) (h₁: formalTheory Γ) (h₂ : PrimeTheory Γ) : formalTheory (FormalDual Γ) := by
   unfold formalTheory
