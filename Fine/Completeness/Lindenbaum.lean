@@ -147,7 +147,7 @@ theorem lindenbaumIsFormal { t : Th } { Δ : Ctx } : formalTheory (lindenbaumExt
         exact h₂ l₇
     exact ⟨⟨i + 1, Encodable.encode (f,f) + 1⟩, l₄⟩
 
-theorem lindenbaumIsPrime { t : Th } { Δ : Ctx } : PrimeTheory (lindenbaumExtension t Δ) := by
+theorem lindenbaumIsPrime { t : Th } { Δ : Ctx } : isPrimeTheory (lindenbaumExtension t Δ) := by
   intros f g h₁
   have ⟨⟨i,j⟩,h₂⟩ := h₁
   let k := Encodable.encode (f,g)
@@ -185,7 +185,7 @@ theorem lindenbaumIsPrime { t : Th } { Δ : Ctx } : PrimeTheory (lindenbaumExten
   case left => intros h₁; exact Or.inl ⟨⟨i+1,k+1⟩,h₁⟩
   case right => intros h₁; exact Or.inr ⟨⟨i+1,k+1⟩,h₁⟩
 
-theorem lindenbaumAvoids { t : Th } { Δ : Ctx } ( h₁ : ↑t ∩ Δ = ∅ ) ( h₂ : DisjunctionClosed Δ ) : ∀ij, ▲lindenbaumSequence t Δ ij ∩ Δ = ∅ 
+theorem lindenbaumAvoids { t : Th } { Δ : Ctx } ( h₁ : ↑t ∩ Δ = ∅ ) ( h₂ : isDisjunctionClosed Δ ) : ∀ij, ▲lindenbaumSequence t Δ ij ∩ Δ = ∅ 
   | ⟨0,0⟩ => by
     have l₁ := formalFixed t.property
     rw [←l₁] at h₁
@@ -264,7 +264,7 @@ theorem lindenbaumAvoids { t : Th } { Δ : Ctx } ( h₁ : ↑t ∩ Δ = ∅ ) ( 
             exact (Set.not_nonempty_iff_eq_empty.mpr l₃) ⟨w₁¦w₂, this⟩
   termination_by lindenbaumAvoids _ _ _ _ p => (p.fst, p.snd)
 
-theorem lindenbaumTheorem { t : Th } { Δ : Ctx } ( h₁ : ↑t ∩ Δ = ∅ ) ( h₂ : DisjunctionClosed Δ ) : lindenbaumExtension t Δ ∩ Δ = ∅ := by
+theorem lindenbaumTheorem { t : Th } { Δ : Ctx } ( h₁ : ↑t ∩ Δ = ∅ ) ( h₂ : isDisjunctionClosed Δ ) : lindenbaumExtension t Δ ∩ Δ = ∅ := by
   unfold lindenbaumExtension
   apply Set.not_nonempty_iff_eq_empty.mp
   intros h₃

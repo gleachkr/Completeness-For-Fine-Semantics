@@ -27,11 +27,27 @@ theorem generatedFormal : ∀Γ : Ctx, formalTheory (▲Γ) := by
        have ⟨prf₂⟩ := ih₂
        exact ⟨BProof.adj prf₁ prf₂⟩
 
-def DisjunctionClosed (Γ : Ctx) := ∀{f g : Form}, f ∈ Γ ∧ g ∈ Γ → f ¦ g ∈ Γ
+def isDisjunctionClosed (Γ : Ctx) := ∀{f g : Form}, f ∈ Γ ∧ g ∈ Γ → f ¦ g ∈ Γ
 
-def PrimeTheory (Γ : Ctx) := ∀{f g : Form}, f ¦ g ∈ Γ → f ∈ Γ ∨ g ∈ Γ
+def disjunctiveClosure (Γ : Ctx) : Ctx := Set.interₛ { Δ : Ctx | Γ ⊆ Δ ∧ isDisjunctionClosed Δ }
 
-abbrev Pr := { Γ : Th // PrimeTheory Γ }
+lemma disjunctiveClosureContainment (Γ : Ctx) : Γ ⊆ disjunctiveClosure Γ := by
+  intros f h₁
+  apply Set.mem_interₛ.mpr
+  intros t h₂
+  exact h₂.left h₁
+
+lemma disjunctiveClosureClosed (Γ : Ctx) : isDisjunctionClosed (disjunctiveClosure Γ) := by
+  intros f g h₁
+  apply Set.mem_interₛ.mpr
+  intros t h₂
+  have l₁ : f ∈ t := (Set.mem_interₛ.mp h₁.left) t h₂
+  have l₂ : g ∈ t := (Set.mem_interₛ.mp h₁.right) t h₂
+  exact h₂.right ⟨l₁,l₂⟩
+
+def isPrimeTheory (Γ : Ctx) := ∀{f g : Form}, f ¦ g ∈ Γ → f ∈ Γ ∨ g ∈ Γ
+
+abbrev Pr := { Γ : Th // isPrimeTheory Γ }
 
 def FormalDual (Γ : Ctx) : Ctx := 
   λf : Form => ¬(~f ∈ Γ)
@@ -141,7 +157,7 @@ def formalApplicationFunction : Th → Th → Th
 
 example {Γ : Th} {Δ : Th} : formalApplication Γ Δ = formalApplicationFunction Γ Δ := rfl
 
-theorem formalStarFormal (Γ : Ctx) (h₁: formalTheory Γ) (h₂ : PrimeTheory Γ) : formalTheory (FormalDual Γ) := by
+theorem formalStarFormal (Γ : Ctx) (h₁: formalTheory Γ) (h₂ : isPrimeTheory Γ) : formalTheory (FormalDual Γ) := by
   unfold formalTheory
   intros F
   apply Iff.intro <;> intros h₃ <;> unfold FormalDual
@@ -176,7 +192,7 @@ def primeStarFunction (Γ : Pr) : Pr := by
     apply Subtype.mk
     case val => exact ⟨FormalDual Γ, formalStarFormal Γ.1.1 Γ.1.2 Γ.2⟩
     case property => 
-      unfold PrimeTheory
+      unfold isPrimeTheory
       intros P Q h₃
       apply byContradiction
       intros h₄
