@@ -44,6 +44,22 @@ lemma generatedDisjunction {f g h: Form} : f ∈ ▲{g} ∧ f ∈ ▲{h} → f �
   have l₃ := (BTheorem.mp (BTheorem.adj l₁ l₂) BTheorem.orE)
   exact ⟨BTheorem.toProof l₃⟩
 
+lemma generatedContained {Γ : Ctx } { Δ : Th } : Γ ⊆ Δ → ▲Γ ⊆ Δ := by
+  intros h₁ f h₂
+  have ⟨prf⟩ := h₂
+  induction prf
+  case ax p ih => exact h₁ ih
+  case mp p q prf₁ prf₂ ih => 
+    have l₁ := ih ⟨prf₁⟩
+    have ⟨prf₃⟩ := Δ.property.mp l₁
+    exact Δ.property.mpr ⟨BProof.mp prf₃ prf₂⟩
+  case adj p q prf₁ prf₂ ih₁ ih₂ => 
+    have l₁ := ih₁ ⟨prf₁⟩
+    have l₂ := ih₂ ⟨prf₂⟩
+    have ⟨prf₃⟩ := Δ.property.mp l₁
+    have ⟨prf₄⟩ := Δ.property.mp l₂
+    exact Δ.property.mpr ⟨BProof.adj prf₃ prf₄⟩
+
 lemma formalFixed {Γ : Ctx} : formalTheory Γ → ▲Γ = Γ := by
   intros h₁
   funext
