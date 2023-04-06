@@ -50,3 +50,58 @@ theorem primeAnalysis : ∀t : Th, t.val = Set.interₛ { p | isPrimeTheory p �
       (lindenbaumExtension t (generatedDisjunctions x)) 
       ⟨lindenbaumIsPrime, lindenbaumExtensionExtends⟩
     exact Set.eq_empty_iff_forall_not_mem.mp l₅ x ⟨l₆,l₄⟩
+
+theorem appBoundingFormalApplication : ∀t u : Th, ∀p : Pr, formalApplicationFunction t u ≤ p →
+  ∃q r: Pr, t ≤ q ∧ u ≤ r ∧ formalApplicationFunction q u ≤ p ∧ formalApplicationFunction t r ≤ p := by
+    intros t u p h₁
+    have l₁ : ∃ q : Pr, t ≤ q ∧ formalApplication q u ⊆ p := by
+      let Δ := {f : Form | ¬(formalApplication (▲{f}) u ⊆ p) }
+      have l₂ : ↑t ∩ Δ = ∅ := by
+        apply Set.eq_empty_iff_forall_not_mem.mpr
+        intros P h₂
+        have l₃ : ▲{P} ⊆ ↑t := generatedContained (Set.singleton_subset_iff.mpr h₂.left)
+        have l₄ := formalAppMonotoneRight ↑u l₃
+        exact h₂.right $ le_trans l₄ h₁
+      have l₃ : isDisjunctionClosed Δ := by
+        intros P Q h₁ h₂
+        have ⟨R,l₄⟩ := nonconstruction h₁.left
+        have ⟨⟨S,l₆,⟨prf₁⟩⟩,l₈⟩ := nonconstruction l₄
+        have ⟨T,l₉⟩ := nonconstruction h₁.right
+        have ⟨⟨U,l₁₀,⟨prf₂⟩⟩,l₁₂⟩ := nonconstruction l₉
+        clear h₁ l₄ l₉
+        have l₁₃ : ¬(R¦T ∈ (p.val).val) := λw => Or.elim (p.property w) l₈ l₁₂
+        clear l₈ l₁₂
+        have prf₃ : BProof {P} (S & U ⊃ R ¦ T) := BProof.mp 
+          (BProof.mp prf₁ (BTheorem.hs BTheorem.taut BTheorem.orI₁))
+          (BTheorem.hs BTheorem.andE₁ BTheorem.taut)
+        have prf₄ : BProof {Q} (S & U ⊃ R ¦ T) := BProof.mp 
+          (BProof.mp prf₂ (BTheorem.hs BTheorem.taut BTheorem.orI₂))
+          (BTheorem.hs BTheorem.andE₂ BTheorem.taut)
+        have prf₅ : BProof {P ¦ Q} (S & U ⊃ R ¦ T) := BTheorem.toProof $
+          BTheorem.mp (BTheorem.adj (BTheorem.fromProof prf₃) (BTheorem.fromProof prf₄)) BTheorem.orE
+        clear prf₁ prf₂ prf₃ prf₄
+        have l₁₄ : S & U ∈ u.val := u.property.mpr ⟨BProof.adj (BProof.ax l₆) (BProof.ax l₁₀)⟩
+        exact l₁₃ $ h₂ ⟨S & U, l₁₄, ⟨prf₅⟩⟩
+      have l₄ : lindenbaumExtension t Δ ∩ Δ = ∅  := lindenbaumTheorem l₂ l₃
+      clear l₂ l₃
+      refine ⟨⟨⟨lindenbaumExtension t Δ, lindenbaumIsFormal⟩, lindenbaumIsPrime⟩, lindenbaumExtensionExtends, ?_⟩
+      change formalApplication (lindenbaumExtension t Δ) ↑u ⊆ p
+      intros P h₁
+      have ⟨Q,h₂,h₃⟩ := h₁
+      have l₄ : formalApplication (▲{Q⊃P}) ↑u ⊆ ↑↑p := by
+        apply byContradiction
+        intros h₄
+        exact (Set.eq_empty_iff_forall_not_mem.mp l₄) (Q⊃P) ⟨h₃,h₄⟩
+      exact l₄ ⟨Q,h₂,⟨BProof.ax rfl⟩⟩
+    have l₁ : ∃ r : Pr, u ≤ r ∧ formalApplication t r ⊆ p := by
+      let Δ := {f : Form | ¬(formalApplication t (▲{f}) ⊆ p) }
+      have l₂ : ↑u ∩ Δ = ∅ := by
+        apply Set.eq_empty_iff_forall_not_mem.mpr
+        intros P h₂
+        have l₃ : ▲{P} ⊆ ↑u := generatedContained (Set.singleton_subset_iff.mpr h₂.left)
+        have l₄ := formalAppMonotoneLeft ↑t l₃
+        exact h₂.right $ le_trans l₄ h₁
+      sorry
+    sorry
+
+
