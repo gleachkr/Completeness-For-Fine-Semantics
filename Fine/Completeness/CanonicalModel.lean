@@ -51,11 +51,16 @@ theorem primeAnalysis : ∀t : Th, t.val = Set.interₛ { p | isPrimeTheory p �
       ⟨lindenbaumIsPrime, lindenbaumExtensionExtends⟩
     exact Set.eq_empty_iff_forall_not_mem.mp l₅ x ⟨l₆,l₄⟩
 
---could break this up into lemmas or something.
 theorem appBoundingFormalApplication : ∀t u : Th, ∀p : Pr, formalApplicationFunction t u ≤ p →
   ∃q r: Pr, t ≤ q ∧ u ≤ r ∧ formalApplicationFunction q u ≤ p ∧ formalApplicationFunction t r ≤ p := by
     intros t u p h₁
-    have l₁ : ∃ q : Pr, t ≤ q ∧ formalApplication q u ⊆ p := by
+    have ⟨q,h₂,h₃⟩ := lemma1 t u p h₁
+    have ⟨r,h₄,h₅⟩ := lemma2 t u p h₁
+    exact ⟨q,r,h₂,h₄,h₃,h₅⟩
+
+  where 
+    lemma1 : ∀t u : Th, ∀p :Pr, formalApplicationFunction t u ≤ p → ∃ q : Pr, t ≤ q ∧ formalApplication q u ⊆ p := by
+      intros t u p h₁
       let Δ := {f : Form | ¬(formalApplication (▲{f}) u ⊆ p) }
       have l₂ : ↑t ∩ Δ = ∅ := by
         apply Set.eq_empty_iff_forall_not_mem.mpr
@@ -96,7 +101,9 @@ theorem appBoundingFormalApplication : ∀t u : Th, ∀p : Pr, formalApplication
         intros h₄
         exact (Set.eq_empty_iff_forall_not_mem.mp l₄) (Q⊃P) ⟨h₃,h₄⟩
       exact l₄ ⟨Q,h₂,⟨BProof.ax rfl⟩⟩
-    have ll₁ : ∃ r : Pr, u ≤ r ∧ formalApplication t r ⊆ p := by
+
+    lemma2 : ∀t u : Th, ∀p :Pr, formalApplicationFunction t u ≤ p → ∃ r : Pr, u ≤ r ∧ formalApplication t r ⊆ p := by
+      intros t u p h₁
       let Δ := {f : Form | ¬(formalApplication t (▲{f}) ⊆ p) }
       have l₂ : ↑u ∩ Δ = ∅ := by
         apply Set.eq_empty_iff_forall_not_mem.mpr
@@ -132,6 +139,3 @@ theorem appBoundingFormalApplication : ∀t u : Th, ∀p : Pr, formalApplication
         intros h₄
         exact (Set.eq_empty_iff_forall_not_mem.mp l₄) Q ⟨h₂,h₄⟩
       exact l₄ ⟨Q,⟨BProof.ax rfl⟩,h₃⟩
-    have ⟨q,h₁,h₂⟩ := l₁
-    have ⟨r,h₃,h₄⟩ := ll₁
-    exact ⟨q,r,h₁,h₃,h₂,h₄⟩
