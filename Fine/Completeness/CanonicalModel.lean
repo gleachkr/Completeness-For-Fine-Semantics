@@ -139,3 +139,19 @@ theorem appBoundingFormalApplication : ∀t u : Th, ∀p : Pr, formalApplication
         intros h₄
         exact (Set.eq_empty_iff_forall_not_mem.mp l₄) Q ⟨h₂,h₄⟩
       exact l₄ ⟨Q,⟨BProof.ax rfl⟩,h₃⟩
+
+instance : Model Th where
+  prime := { x | isPrimeTheory x }
+  application := formalApplicationFunction
+  routeleyStar := primeStarFunction
+  valuation := λt => { n | #n ∈ t.val }
+  identity := ⟨BTheory, BisFormal⟩
+  appMonotoneLeft := formalAppFunctionMonotoneLeft
+  appMonotoneRight := formalAppFunctionMonotoneRight
+  appBounding := appBoundingFormalApplication
+  appLeftIdent := sorry
+  valMonotone := sorry
+  valBounding := sorry
+  starAntitone := sorry
+  starInvolution := starInvolution
+

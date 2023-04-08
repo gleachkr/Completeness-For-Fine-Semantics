@@ -44,6 +44,8 @@ def BTheorem.transitivityRight (h : BTheorem (p ⊃ q)) : BTheorem ((r ⊃ p) �
 def BTheorem.commAnd : BTheorem (q & p ⊃ p & q) :=
   BTheorem.mp (BTheorem.adj BTheorem.andE₂ BTheorem.andE₁) BTheorem.andI
 
+def BTheorem.dni : BTheorem (p ⊃ ~~p) := BTheorem.cp BTheorem.taut 
+
 def BTheorem.distRight : BTheorem ((q ¦ r) & p ⊃ (q & p) ¦ (r & p)) :=
   have l₁ : BTheorem ((q ¦ r) & p ⊃ (p & q) ¦ (p & r)) := BTheorem.transitivity BTheorem.commAnd BTheorem.dist
   have l₂ : BTheorem ((p & q) ¦ (p & r) ⊃ (q & p) ¦ (r & p)) := BTheorem.mp 

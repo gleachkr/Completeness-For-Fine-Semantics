@@ -157,6 +157,14 @@ def formalApplicationFunction : Th → Th → Th
 
 example {Γ : Th} {Δ : Th} : formalApplication Γ Δ = formalApplicationFunction Γ Δ := rfl
 
+theorem formalAppFunctionMonotoneRight : ∀Γ : Th, Monotone (flip formalApplicationFunction Γ) := by
+  intros Γ _ _ h₁
+  exact formalAppMonotoneRight Γ h₁
+
+theorem formalAppFunctionMonotoneLeft : ∀Γ : Th, Monotone (formalApplicationFunction Γ) := by
+  intros Γ _ _ h₁
+  exact formalAppMonotoneLeft Γ h₁
+
 theorem formalStarFormal (Γ : Ctx) (h₁: formalTheory Γ) (h₂ : isPrimeTheory Γ) : formalTheory (FormalDual Γ) := by
   unfold formalTheory
   intros F
@@ -205,4 +213,18 @@ def primeStarFunction (Γ : Pr) : Pr := by
 
 example {Γ : Pr} : FormalDual Γ = primeStarFunction Γ := rfl
 
+theorem starInvolution : Function.Involutive primeStarFunction := by
+  intros Γ
+  ext f
+  apply Iff.intro
+  all_goals intros h₁
+  case a.a.h.mpr =>
+    intros h₂
+    have l₁ : ~~f ∈ Γ.val.val := Γ.val.property.mpr ⟨BProof.mp (BProof.ax h₁) BTheorem.dni⟩
+    exact h₂ l₁
+  case a.a.h.mp =>
+    apply byContradiction
+    intros h₂
+    have l₂ : ¬(~~f ∈ Γ.val.val) := h₂ ∘ λel => Γ.val.property.mpr ⟨BProof.mp (BProof.ax el) BTheorem.dne⟩
+    exact h₁ l₂
 end
