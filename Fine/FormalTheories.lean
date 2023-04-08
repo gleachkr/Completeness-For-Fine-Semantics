@@ -228,4 +228,9 @@ theorem starInvolution : Function.Involutive primeStarFunction := by
     intros h₂
     have l₂ : ¬(~~f ∈ Γ.val.val) := h₂ ∘ λel => Γ.val.property.mpr ⟨BProof.mp (BProof.ax el) BTheorem.dne⟩
     exact h₁ l₂
+
+theorem starAntitone : Antitone primeStarFunction := by
+  intros _ _ h₁ f h₂ h₃
+  exact h₂ (h₁ h₃)
+
 end

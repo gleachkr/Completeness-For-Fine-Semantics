@@ -6,7 +6,7 @@ def generatedDisjunctions (g : Form) : Set Form
   | f₁ ¦ f₂ => g = f₁ ¦ f₂ ∨ (generatedDisjunctions g f₁ ∧ generatedDisjunctions g f₂)
   | y => g = y
 
-theorem primeAnalysis : ∀t : Th, t.val = Set.interₛ { p | isPrimeTheory p ∧ t.val ≤ p } := by
+theorem primeAnalysis : ∀t : Th, t.val = Set.interₛ { p | isPrimeTheory p ∧ t.val ≤ p ∧ formalTheory p } := by
   intros t
   ext x
   apply Iff.intro
@@ -14,7 +14,7 @@ theorem primeAnalysis : ∀t : Th, t.val = Set.interₛ { p | isPrimeTheory p �
     intros h₁
     apply Set.mem_interₛ.mpr
     intros r h₂
-    exact h₂.right h₁
+    exact h₂.right.left h₁
   case h.mpr =>
     intros h₁
     apply byContradiction
@@ -48,7 +48,7 @@ theorem primeAnalysis : ∀t : Th, t.val = Set.interₛ { p | isPrimeTheory p �
     have l₅ := lindenbaumTheorem l₂ l₃
     have l₆ := (Set.mem_interₛ.mp h₁) 
       (lindenbaumExtension t (generatedDisjunctions x)) 
-      ⟨lindenbaumIsPrime, lindenbaumExtensionExtends⟩
+      ⟨lindenbaumIsPrime, lindenbaumExtensionExtends, lindenbaumIsFormal⟩
     exact Set.eq_empty_iff_forall_not_mem.mp l₅ x ⟨l₆,l₄⟩
 
 theorem appBoundingFormalApplication : ∀t u : Th, ∀p : Pr, formalApplicationFunction t u ≤ p →
@@ -140,18 +140,31 @@ theorem appBoundingFormalApplication : ∀t u : Th, ∀p : Pr, formalApplication
         exact (Set.eq_empty_iff_forall_not_mem.mp l₄) Q ⟨h₂,h₄⟩
       exact l₄ ⟨Q,⟨BProof.ax rfl⟩,h₃⟩
 
+def theoryValuation : Th → Set Nat := λt => { n | #n ∈ t.val }
+
+theorem theoryValuationMonotone : Monotone theoryValuation := by
+  intros _ _ h₁ n h₂
+  exact h₁ h₂
+
+theorem theoryValuationBounding : ∀t : Th, ∀x : Nat, (∀p : Pr, t ≤ p → x ∈ theoryValuation p) → x ∈ theoryValuation t := by
+  intros t x h₁
+  change #x ∈ t.val
+  rw [primeAnalysis t]
+  apply Set.mem_interₛ.mpr
+  intros r h₂
+  exact h₁ ⟨⟨r,h₂.right.right⟩,h₂.left⟩ h₂.right.left
+
 instance : Model Th where
   prime := { x | isPrimeTheory x }
   application := formalApplicationFunction
   routeleyStar := primeStarFunction
-  valuation := λt => { n | #n ∈ t.val }
+  valuation := theoryValuation
   identity := BTh
   appMonotoneLeft := formalAppFunctionMonotoneLeft
   appMonotoneRight := formalAppFunctionMonotoneRight
   appBounding := appBoundingFormalApplication
   appLeftIdent := formalAppIdentLeft
-  valMonotone := sorry
-  valBounding := sorry
-  starAntitone := sorry
+  valMonotone := theoryValuationMonotone
+  valBounding := theoryValuationBounding
+  starAntitone := starAntitone
   starInvolution := starInvolution
-
