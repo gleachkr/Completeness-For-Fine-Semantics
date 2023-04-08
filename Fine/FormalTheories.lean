@@ -90,6 +90,8 @@ lemma BisFormal : formalTheory BTheory := by
       have ⟨l₂⟩ := ih₂ ⟨prf₂⟩
       exact ⟨BTheorem.adj l₁ l₂⟩
 
+abbrev BTh : Th := ⟨BTheory, BisFormal⟩
+
 def formalApplication (Γ : Ctx) (Δ : Ctx) : Ctx := λf : Form => ∃g : Form, g ∈ Δ ∧ (g ⊃ f) ∈ Γ
 
 theorem formalAppMonotoneLeft : ∀Γ : Ctx, Monotone (formalApplication Γ) := by
@@ -105,6 +107,9 @@ theorem formalAppMonotoneRight : ∀Γ : Ctx, Monotone (flip formalApplication �
   intros a b h₁ A h₂
   have ⟨g,h₃⟩ := h₂
   exact ⟨g, h₃.left, h₁ h₃.right⟩
+
+
+
   
 def formalApplicationFunction : Th → Th → Th
   | ⟨Δ, h₁⟩, ⟨Γ, h₂⟩ => by
@@ -148,6 +153,18 @@ theorem formalAppFunctionMonotoneRight : ∀Γ : Th, Monotone (flip formalApplic
 theorem formalAppFunctionMonotoneLeft : ∀Γ : Th, Monotone (formalApplicationFunction Γ) := by
   intros Γ _ _ h₁
   exact formalAppMonotoneLeft Γ h₁
+
+theorem formalAppIdentLeft : ∀Γ : Th, formalApplicationFunction BTh Γ = Γ := by
+  intros Γ
+  ext f
+  apply Iff.intro
+  case a.h.mp =>
+    intros h₁
+    have ⟨g,h₂,⟨h₃⟩⟩ := h₁
+    exact Γ.property.mpr ⟨BProof.mp (BProof.ax h₂) h₃⟩
+  case a.h.mpr =>
+    intros h₁
+    exact ⟨f, h₁, ⟨BTheorem.taut⟩⟩
 
 theorem formalStarFormal (Γ : Ctx) (h₁: formalTheory Γ) (h₂ : isPrimeTheory Γ) : formalTheory (FormalDual Γ) := by
   unfold formalTheory

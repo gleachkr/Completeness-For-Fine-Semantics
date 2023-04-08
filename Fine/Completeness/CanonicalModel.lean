@@ -145,11 +145,11 @@ instance : Model Th where
   application := formalApplicationFunction
   routeleyStar := primeStarFunction
   valuation := λt => { n | #n ∈ t.val }
-  identity := ⟨BTheory, BisFormal⟩
+  identity := BTh
   appMonotoneLeft := formalAppFunctionMonotoneLeft
   appMonotoneRight := formalAppFunctionMonotoneRight
   appBounding := appBoundingFormalApplication
-  appLeftIdent := sorry
+  appLeftIdent := formalAppIdentLeft
   valMonotone := sorry
   valBounding := sorry
   starAntitone := sorry
