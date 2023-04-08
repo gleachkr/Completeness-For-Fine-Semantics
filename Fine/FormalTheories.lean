@@ -29,22 +29,6 @@ theorem generatedFormal : ∀Γ : Ctx, formalTheory (▲Γ) := by
 
 def isDisjunctionClosed (Γ : Ctx) := ∀{f g : Form}, f ∈ Γ ∧ g ∈ Γ → f ¦ g ∈ Γ
 
-def disjunctiveClosure (Γ : Ctx) : Ctx := Set.interₛ { Δ : Ctx | Γ ⊆ Δ ∧ isDisjunctionClosed Δ }
-
-lemma disjunctiveClosureContainment (Γ : Ctx) : Γ ⊆ disjunctiveClosure Γ := by
-  intros f h₁
-  apply Set.mem_interₛ.mpr
-  intros t h₂
-  exact h₂.left h₁
-
-lemma disjunctiveClosureClosed (Γ : Ctx) : isDisjunctionClosed (disjunctiveClosure Γ) := by
-  intros f g h₁
-  apply Set.mem_interₛ.mpr
-  intros t h₂
-  have l₁ : f ∈ t := (Set.mem_interₛ.mp h₁.left) t h₂
-  have l₂ : g ∈ t := (Set.mem_interₛ.mp h₁.right) t h₂
-  exact h₂.right ⟨l₁,l₂⟩
-
 def isPrimeTheory (Γ : Ctx) := ∀{f g : Form}, f ¦ g ∈ Γ → f ∈ Γ ∨ g ∈ Γ
 
 abbrev Pr := { Γ : Th // isPrimeTheory Γ }
