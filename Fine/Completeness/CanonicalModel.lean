@@ -154,7 +154,7 @@ theorem theoryValuationBounding : ∀t : Th, ∀x : Nat, (∀p : Pr, t ≤ p →
   intros r h₂
   exact h₁ ⟨⟨r,h₂.right.right⟩,h₂.left⟩ h₂.right.left
 
-instance : Model Th where
+instance canonicalInstance : Model Th where
   prime := { x | isPrimeTheory x }
   application := formalApplicationFunction
   routeleyStar := primeStarFunction
@@ -168,3 +168,72 @@ instance : Model Th where
   valBounding := theoryValuationBounding
   starAntitone := starAntitone
   starInvolution := starInvolution
+
+theorem canonicalSatisfaction : ∀{t : Th}, ∀{f : Form}, t ⊨ f ↔ f ∈ t.val := by
+  intros t f
+  cases f
+  all_goals apply Iff.intro <;> intros h₁
+  case atom.mp => exact h₁
+  case atom.mpr => exact h₁
+  case and.mp f g => 
+      have l₁ : f ∈ t.val := canonicalSatisfaction.mp h₁.left
+      have l₂ : g ∈ t.val := canonicalSatisfaction.mp h₁.right
+      exact t.property.mpr ⟨BProof.adj (BProof.ax l₁) (BProof.ax l₂)⟩
+  case and.mpr f g =>
+      have l₁ : t ⊨ f := canonicalSatisfaction.mpr $ t.property.mpr ⟨BProof.mp (BProof.ax h₁) BTheorem.andE₁⟩
+      have l₂ : t ⊨ g := canonicalSatisfaction.mpr $ t.property.mpr ⟨BProof.mp (BProof.ax h₁) BTheorem.andE₂⟩
+      exact ⟨l₁,l₂⟩
+  case or.mp f g =>
+    rw [primeAnalysis]
+    intros p h₂
+    let pr : Pr := ⟨⟨p, h₂.right.right⟩,h₂.left⟩
+    have l₁ := @h₁ pr h₂.right.left
+    cases l₁
+    case inl h₃ => 
+      have l₂ := canonicalSatisfaction.mp h₃
+      exact h₂.right.right.mpr ⟨BProof.mp (BProof.ax l₂) BTheorem.orI₁⟩
+    case inr h₃ => 
+      have l₂ := canonicalSatisfaction.mp h₃
+      exact h₂.right.right.mpr ⟨BProof.mp (BProof.ax l₂) BTheorem.orI₂⟩
+  case or.mpr f g =>
+    intros p h₂
+    rw [primeAnalysis] at h₁
+    have l₁ : f ¦ g ∈ p.val.val := (Set.mem_interₛ.mp h₁ p) ⟨p.property, h₂, p.val.property⟩
+    have l₂ : f ∈ p.val.val ∨ g ∈ p.val.val := p.property l₁
+    cases l₂
+    case inl h₂ => exact Or.inl $ canonicalSatisfaction.mpr h₂
+    case inr h₂ => exact Or.inr $ canonicalSatisfaction.mpr h₂
+  case neg.mp f => 
+    rw [primeAnalysis]
+    intros p h₂
+    let pr : Pr := ⟨⟨p, h₂.right.right⟩,h₂.left⟩
+    have l₁ := @h₁ pr h₂.right.left
+    have l₂ := l₁ ∘ canonicalSatisfaction.mpr 
+    apply byContradiction
+    exact l₂
+  case neg.mpr f => 
+    intros p h₂ h₃
+    rw [primeAnalysis] at h₁
+    have l₁ : ~f ∈ p.val.val := (Set.mem_interₛ.mp h₁ p) ⟨p.property, h₂, p.val.property⟩
+    exact canonicalSatisfaction.mp h₃ l₁
+  case impl.mp f g =>
+    apply byContradiction
+    intros h₂
+    let Δ : Th := ⟨▲{f}, generatedFormal {f}⟩
+    have l₁ : ¬(g ∈ (formalApplicationFunction t Δ).val) := by
+      intros h₃
+      have ⟨q,⟨prf₁⟩,l₂⟩ := h₃
+      have ⟨prf₂⟩ := t.property.mp l₂
+      have prf₃ := BProof.mp prf₂ (BTheorem.hs (BTheorem.fromProof prf₁) BTheorem.taut)
+      exact h₂ $ t.property.mpr ⟨prf₃⟩
+    have l₂ : Δ ⊨ f := canonicalSatisfaction.mpr ⟨BProof.ax rfl⟩
+    exact l₁ $ canonicalSatisfaction.mp (h₁ l₂)
+  case impl.mpr f g => 
+    intros r h₂
+    have l₁ := canonicalSatisfaction.mp h₂
+    have l₂ : g ∈ (formalApplicationFunction t r).val := ⟨f, l₁, h₁⟩
+    exact canonicalSatisfaction.mpr l₂
+
+--it'd be nice to not have to explicitly supply the model instance
+theorem systemBCompleteness (h₁ : valid f) : Nonempty (BTheorem f) :=
+  canonicalSatisfaction.mp $ h₁ Th canonicalInstance
