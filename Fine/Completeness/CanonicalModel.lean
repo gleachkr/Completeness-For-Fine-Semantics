@@ -6,7 +6,7 @@ def generatedDisjunctions (g : Form) : Set Form
   | f₁ ¦ f₂ => g = f₁ ¦ f₂ ∨ (generatedDisjunctions g f₁ ∧ generatedDisjunctions g f₂)
   | y => g = y
 
-theorem primeAnalysis : ∀t : Th, t.val = Set.interₛ { p | isPrimeTheory p ∧ t.val ≤ p ∧ formalTheory p } := by
+theorem primeAnalysis : ∀t : Th, t.val = Set.interₛ { p | isPrimeTheory p ∧ t ≤ p ∧ formalTheory p } := by
   intros t
   ext x
   apply Iff.intro
@@ -75,7 +75,7 @@ theorem appBoundingFormalApplication : ∀t u : Th, ∀p : Pr, formalApplication
         have ⟨T,l₉⟩ := nonconstruction h₁.right
         have ⟨⟨U,l₁₀,⟨prf₂⟩⟩,l₁₂⟩ := nonconstruction l₉
         clear h₁ l₄ l₉
-        have l₁₃ : ¬(R¦T ∈ (p.val).val) := λw => Or.elim (p.property w) l₈ l₁₂
+        have l₁₃ : ¬(R¦T ∈ p) := λw => Or.elim (p.property w) l₈ l₁₂
         apply l₁₃
         apply h₂
         clear l₈ l₁₂ l₁₃ h₂
@@ -88,7 +88,7 @@ theorem appBoundingFormalApplication : ∀t u : Th, ∀p : Pr, formalApplication
         have prf₅ : BProof {P ¦ Q} (S & U ⊃ R ¦ T) := BTheorem.toProof $
           BTheorem.mp (BTheorem.adj (BTheorem.fromProof prf₃) (BTheorem.fromProof prf₄)) BTheorem.orE
         clear prf₁ prf₂ prf₃ prf₄
-        have l₁₄ : S & U ∈ u.val := u.property.mpr ⟨BProof.adj (BProof.ax l₆) (BProof.ax l₁₀)⟩
+        have l₁₄ : S & U ∈ u := u.property.mpr ⟨BProof.adj (BProof.ax l₆) (BProof.ax l₁₀)⟩
         exact ⟨S & U, l₁₄, ⟨prf₅⟩⟩
       have l₄ : lindenbaumExtension t Δ ∩ Δ = ∅  := lindenbaumTheorem l₂ l₃
       clear l₂ l₃
@@ -118,12 +118,12 @@ theorem appBoundingFormalApplication : ∀t u : Th, ∀p : Pr, formalApplication
         have ⟨T,l₉⟩ := nonconstruction h₁.right
         have ⟨⟨U,⟨prf₂⟩,l₁₀⟩,l₁₂⟩ := nonconstruction l₉
         clear h₁ l₄ l₉
-        have l₁₃ : ¬(R¦T ∈ (p.val).val) := λw => Or.elim (p.property w) l₈ l₁₂
+        have l₁₃ : ¬(R¦T ∈ p) := λw => Or.elim (p.property w) l₈ l₁₂
         apply l₁₃
         apply h₂
         clear l₈ l₁₂ l₁₃ h₂
         have l₁₄ : S¦U ∈ ▲{P¦Q} := ⟨BTheorem.toProof (BTheorem.orFunctor (BTheorem.fromProof prf₁) (BTheorem.fromProof prf₂))⟩
-        have l₁₅ : (S¦U ⊃ R¦T) ∈ t.val := t.property.mpr ⟨BProof.mp (BProof.adj 
+        have l₁₅ : (S¦U ⊃ R¦T) ∈ t := t.property.mpr ⟨BProof.mp (BProof.adj 
           (BProof.mp (BProof.ax l₆) (BTheorem.hs BTheorem.taut BTheorem.orI₁))
           (BProof.mp (BProof.ax l₁₀) (BTheorem.hs BTheorem.taut BTheorem.orI₂)))
           BTheorem.orE⟩
@@ -140,7 +140,7 @@ theorem appBoundingFormalApplication : ∀t u : Th, ∀p : Pr, formalApplication
         exact (Set.eq_empty_iff_forall_not_mem.mp l₄) Q ⟨h₂,h₄⟩
       exact l₄ ⟨Q,⟨BProof.ax rfl⟩,h₃⟩
 
-def theoryValuation : Th → Set Nat := λt => { n | #n ∈ t.val }
+def theoryValuation : Th → Set Nat := λt => { n | #n ∈ t }
 
 theorem theoryValuationMonotone : Monotone theoryValuation := by
   intros _ _ h₁ n h₂
@@ -176,8 +176,8 @@ theorem canonicalSatisfaction : ∀{t : Th}, ∀{f : Form}, t ⊨ f ↔ f ∈ t.
   case atom.mp => exact h₁
   case atom.mpr => exact h₁
   case and.mp f g => 
-      have l₁ : f ∈ t.val := canonicalSatisfaction.mp h₁.left
-      have l₂ : g ∈ t.val := canonicalSatisfaction.mp h₁.right
+      have l₁ : f ∈ t := canonicalSatisfaction.mp h₁.left
+      have l₂ : g ∈ t := canonicalSatisfaction.mp h₁.right
       exact t.property.mpr ⟨BProof.adj (BProof.ax l₁) (BProof.ax l₂)⟩
   case and.mpr f g =>
       have l₁ : t ⊨ f := canonicalSatisfaction.mpr $ t.property.mpr ⟨BProof.mp (BProof.ax h₁) BTheorem.andE₁⟩

@@ -7,6 +7,9 @@ def formalTheory (Γ : Ctx) : Prop := ∀{f : Form}, f ∈ Γ ↔ Γ ⊢ f
 
 abbrev Th := { Γ : Ctx // formalTheory Γ }
 
+instance : Membership Form Th where
+  mem f Γ := f ∈ Γ.val
+
 def generatedTheory (Γ : Ctx) : Ctx := BProvable Γ
 
 prefix:512 "▲" => generatedTheory
@@ -32,6 +35,9 @@ def isDisjunctionClosed (Γ : Ctx) := ∀{f g : Form}, f ∈ Γ ∧ g ∈ Γ →
 def isPrimeTheory (Γ : Ctx) := ∀{f g : Form}, f ¦ g ∈ Γ → f ∈ Γ ∨ g ∈ Γ
 
 abbrev Pr := { Γ : Th // isPrimeTheory Γ }
+
+instance : Membership Form Pr where
+  mem f Γ := f ∈ Γ.val
 
 def FormalDual (Γ : Ctx) : Ctx := 
   λf : Form => ¬(~f ∈ Γ)
@@ -221,12 +227,12 @@ theorem starInvolution : Function.Involutive primeStarFunction := by
   all_goals intros h₁
   case a.a.h.mpr =>
     intros h₂
-    have l₁ : ~~f ∈ Γ.val.val := Γ.val.property.mpr ⟨BProof.mp (BProof.ax h₁) BTheorem.dni⟩
+    have l₁ : ~~f ∈ Γ := Γ.val.property.mpr ⟨BProof.mp (BProof.ax h₁) BTheorem.dni⟩
     exact h₂ l₁
   case a.a.h.mp =>
     apply byContradiction
     intros h₂
-    have l₂ : ¬(~~f ∈ Γ.val.val) := h₂ ∘ λel => Γ.val.property.mpr ⟨BProof.mp (BProof.ax el) BTheorem.dne⟩
+    have l₂ : ¬(~~f ∈ Γ) := h₂ ∘ λel => Γ.val.property.mpr ⟨BProof.mp (BProof.ax el) BTheorem.dne⟩
     exact h₁ l₂
 
 theorem starAntitone : Antitone primeStarFunction := by

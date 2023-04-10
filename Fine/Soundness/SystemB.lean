@@ -37,7 +37,7 @@ def systemBSoundness (prf: BTheorem f) : valid f := by
   case dne P => 
     apply primeDetermination
     intros p h₂
-    have ⟨q, l₁⟩ : ∃q : M.primes, ¬((p*).val ≤ q.val → ¬((q*).val) ⊨ P) := nonconstruction (h₁ h₂)
+    have ⟨q, l₁⟩ : ∃q : M.primes, ¬(p* ≤ q → ¬(q*) ⊨ P) := nonconstruction (h₁ h₂)
     have ⟨l₂, l₃⟩ := nonconstruction l₁
     have l₄ := M.starAntitone l₂
     rw [M.starInvolution] at l₄
@@ -63,10 +63,10 @@ def systemBSoundness (prf: BTheorem f) : valid f := by
     have ⟨l₃, l₄⟩ := nonconstruction l₂
     have l₅ := starCompatLeft l₄
     have l₆ : M.identity ⊨ P ⊃ ~Q:= val₁ α
-    have l₇ : (M.identity ∙ (q*).val) ⊨ ~Q := l₆ l₅
+    have l₇ : (M.identity ∙ (q*)) ⊨ ~Q := l₆ l₅
     have l₈ : ¬(q** ⊨ Q) := by
-      rw [M.appLeftIdent (q*).val] at l₇
-      exact l₇ (le_refl (q*).val)
+      rw [M.appLeftIdent (q*)] at l₇
+      exact l₇ (le_refl (q*))
     rw [M.starInvolution q] at l₈
     exact l₈ $ upwardsClosure l₃ h₁
   case hs val₁ val₂ => 
