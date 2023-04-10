@@ -17,7 +17,7 @@ infix:128 "⊨"  => satisfies
 
 abbrev verifies (inst : Model α) (f : Form) : Prop := inst.identity ⊨ f
 
-abbrev valid (f : Form) : Prop := ∀α : Type, ∀m : Model α, verifies m f
+abbrev valid (f : Form) : Prop := ∀α : Type, ∀[m : Model α], verifies m f
 
 theorem upwardsClosure [inst : Model α] {s t : α} {f : Form} (h₁: s ≤ t) (h₂ : s ⊨ f) : t ⊨ f := 
   match f with

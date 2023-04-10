@@ -70,11 +70,11 @@ def systemBSoundness (prf: BTheorem f) : valid f := by
       exact ⟨upwardsClosure h₂ l₁, h₃⟩
   case adj thm₁ thm₂ => 
     unfold satisfies
-    exact ⟨thm₁ α M, thm₂ α M⟩
+    exact ⟨thm₁ α, thm₂ α⟩
   case mp thm₁ thm₂ => 
     rename_i P Q R S
-    have l₁ : M.identity ⊨ P := thm₁ α M
-    have l₃ : M.identity ⊨ P ⊃ Q := thm₂ α M
+    have l₁ : M.identity ⊨ P := thm₁ α
+    have l₃ : M.identity ⊨ P ⊃ Q := thm₂ α
     have l₄ := l₃ l₁
     rw [←M.appLeftIdent M.identity]
     assumption
@@ -86,7 +86,7 @@ def systemBSoundness (prf: BTheorem f) : valid f := by
     have ⟨q, l₂⟩ := nonconstruction h₂
     have ⟨l₃, l₄⟩ := nonconstruction l₂
     have l₅ := starCompatLeft l₄
-    have l₆ : M.identity ⊨ P ⊃ ~Q:= thm₁ α M
+    have l₆ : M.identity ⊨ P ⊃ ~Q:= thm₁ α
     have l₇ : (M.identity ∙ (q*).val) ⊨ ~Q := l₆ l₅
     unfold satisfies at l₇
     have l₈ : ¬(q** ⊨ Q) := by
@@ -97,8 +97,8 @@ def systemBSoundness (prf: BTheorem f) : valid f := by
   case hs thm₁ thm₂ => 
     unfold satisfies
     intros u h₂
-    have l₁ := (thm₁ α M) h₂
+    have l₁ := (thm₁ α) h₂
     rw [M.appLeftIdent u] at l₁
-    have l₂ := (thm₂ α M) (h₁ l₁)
+    have l₂ := (thm₂ α) (h₁ l₁)
     rw [M.appLeftIdent (x ∙ u)] at l₂
     assumption

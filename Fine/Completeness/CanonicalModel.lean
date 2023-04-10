@@ -234,6 +234,5 @@ theorem canonicalSatisfaction : ∀{t : Th}, ∀{f : Form}, t ⊨ f ↔ f ∈ t.
     have l₂ : g ∈ (formalApplicationFunction t r).val := ⟨f, l₁, h₁⟩
     exact canonicalSatisfaction.mpr l₂
 
---it'd be nice to not have to explicitly supply the model instance
 theorem systemBCompleteness (h₁ : valid f) : Nonempty (BTheorem f) :=
-  canonicalSatisfaction.mp $ h₁ Th canonicalInstance
+  canonicalSatisfaction.mp $ h₁ Th
