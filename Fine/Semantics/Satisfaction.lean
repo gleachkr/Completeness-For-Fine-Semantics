@@ -21,22 +21,17 @@ abbrev valid (f : Form) : Prop := ∀α : Type, ∀[m : Model α], verifies m f
 
 theorem upwardsClosure [inst : Model α] {s t : α} {f : Form} (h₁: s ≤ t) (h₂ : s ⊨ f) : t ⊨ f := 
   match f with
-    | #n => have l₁ : inst.valuation s ⊆ inst.valuation t := inst.valMonotone s t h₁
-            l₁ h₂
-    | ~g => by unfold satisfies
-               intros p h₃ h₄
+    | #n => (inst.valMonotone s t h₁) h₂
+    | ~g => by intros p h₃ h₄
                exact h₂ (le_trans h₁ h₃) h₄
-    | f & g => by unfold satisfies
-                  apply And.intro
+    | f & g => by apply And.intro
                   case left => exact upwardsClosure h₁ h₂.left
                   case right => exact upwardsClosure h₁ h₂.right
-    | f ¦ g => by unfold satisfies
-                  intros p h₃
+    | f ¦ g => by intros p h₃
                   apply Or.elim (h₂ (le_trans' h₃ h₁))
                   case left => intro h₄; exact Or.inl h₄
                   case right => intro h₄; exact Or.inr h₄
-    | Form.impl f g => by unfold satisfies
-                          intros u h₃
+    | Form.impl f g => by intros u h₃
                           have l₁ : s ∙ u ≤ t ∙ u := inst.appMonotoneRight u h₁
                           have l₂ : (s ∙ u) ⊨ g := h₂ h₃
                           exact upwardsClosure l₁ l₂
@@ -44,11 +39,9 @@ theorem upwardsClosure [inst : Model α] {s t : α} {f : Form} (h₁: s ≤ t) (
 theorem primeDetermination [inst : Model α] {t : α} { f : Form } (h₁ : ∀p : inst.primes, t ≤ p → p ⊨ f) : t ⊨ f := 
   match f with
     | #n => Model.valBounding t n h₁
-    | ~f => by unfold satisfies
-               intros p h₂ h₃
+    | ~f => by intros p h₂ h₃
                exact h₁ p h₂ (le_refl p.val) h₃
-    | f & g => by unfold satisfies
-                  apply And.intro
+    | f & g => by apply And.intro
                   case left => 
                     have l₁ : ∀p : inst.primes, t ≤ p → p ⊨ f := by
                       intros p h₂
@@ -59,17 +52,11 @@ theorem primeDetermination [inst : Model α] {t : α} { f : Form } (h₁ : ∀p 
                       intros p h₂
                       exact (h₁ p h₂).right
                     exact primeDetermination l₁
-    | f ¦ g => by unfold satisfies
-                  intros p h₂
+    | f ¦ g => by intros p h₂
                   cases h₁ p h₂ (le_refl p.val)
-                  case inl => 
-                    apply Or.inl
-                    assumption
-                  case inr => 
-                    apply Or.inr
-                    assumption
-    | Form.impl f g => by unfold satisfies
-                          intros u h₂
+                  case inl => apply Or.inl; assumption
+                  case inr => apply Or.inr; assumption
+    | Form.impl f g => by intros u h₂
                           apply primeDetermination
                           intros p h₃
                           have ⟨q, _, l₃,_,l₄,_⟩ : ∃q r : inst.primes, t ≤ q ∧ u ≤ r ∧ (↑q ∙ u) ≤ p ∧ (t ∙ r) ≤ p.val := inst.appBounding t u p h₃
@@ -90,9 +77,7 @@ theorem logicInIdentity [inst : Model α] {f g : Form} : inst.identity ⊨ f ⊃
     rw [←inst.appLeftIdent x]
     assumption
   case mpr =>
-    intro h₁
-    unfold satisfies
-    intro u h₂
+    intro h₁ u h₂
     rw [inst.appLeftIdent u]
     exact h₁ u h₂
 
