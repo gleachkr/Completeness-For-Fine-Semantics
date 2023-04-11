@@ -33,3 +33,15 @@ lemma finiteExhaustion [instDec: DecidableEq α] [LinearOrder β] [Inhabited β]
         cases Finset.mem_insert.mp h₄
         case inl h₅ => rw [h₅]; assumption
         case inr h₅ => exact l₅ h₅
+
+
+section
+
+open Classical
+
+theorem nonconstruction {α : Sort u} {p : α → Prop} (h₁ : ¬∀x : α, p x) : (∃x : α, ¬ p x) :=
+  byContradiction λh₂ => 
+    have l₁ : ∀x : α, p x := λx : α => byContradiction λh₃ => h₂ ⟨x, h₃⟩
+    h₁ l₁
+
+end

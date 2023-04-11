@@ -1,5 +1,6 @@
 import Fine.Semantics.Model
 import Fine.PropositionalLanguage
+import Fine.Util.util
 
 def satisfies [inst : Model α] (t : α) (f : Form) : Prop :=
   match f with
@@ -73,9 +74,8 @@ theorem logicInIdentity [inst : Model α] {f g : Form} : inst.identity ⊨ f ⊃
   apply Iff.intro
   case mp => 
     intros h₁ x h₂
-    have l₁ : (inst.identity ∙ x) ⊨ g := h₁ h₂
     rw [←inst.appLeftIdent x]
-    assumption
+    exact h₁ h₂
   case mpr =>
     intro h₁ u h₂
     rw [inst.appLeftIdent u]
@@ -84,11 +84,6 @@ theorem logicInIdentity [inst : Model α] {f g : Form} : inst.identity ⊨ f ⊃
 section
 
 open Classical
-
-theorem nonconstruction {α : Sort u} {p : α → Prop} (h₁ : ¬∀x : α, p x) : (∃x : α, ¬ p x) :=
-  byContradiction λh₂ => 
-    have l₁ : ∀x : α, p x := λx : α => byContradiction λh₃ => h₂ ⟨x, h₃⟩
-    h₁ l₁
 
 theorem starCompatLeft [inst : Model α] {p : inst.primes} {f : Form} : ¬(p ⊨ ~f) → p* ⊨ f := by
   intros h₁
