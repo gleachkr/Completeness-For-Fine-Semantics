@@ -1,4 +1,4 @@
-import Fine.FormalTheories
+import Fine.SystemB.Theories
 import Mathlib.Data.Prod.Lex
 import Fine.Util.util
 

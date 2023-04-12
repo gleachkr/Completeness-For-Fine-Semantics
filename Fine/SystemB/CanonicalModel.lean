@@ -1,4 +1,4 @@
-import Fine.Completeness.Lindenbaum
+import Fine.SystemB.Lindenbaum
 
 open Classical
 

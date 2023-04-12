@@ -1,6 +1,6 @@
 import Fine.Semantics.Model
 import Fine.Semantics.Satisfaction
-import Fine.Hilbert.SystemB
+import Fine.SystemB.Hilbert
 import Fine.PropositionalLanguage
 
 open Classical
