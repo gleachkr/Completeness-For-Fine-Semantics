@@ -42,16 +42,16 @@ def BTheorem.transitivityRight (h : BTheorem (p ⊃ q)) : BTheorem ((r ⊃ p) �
   hs taut h
 
 def BTheorem.commAnd : BTheorem (q & p ⊃ p & q) :=
-  BTheorem.mp (BTheorem.adj BTheorem.andE₂ BTheorem.andE₁) BTheorem.andI
+  mp (BTheorem.adj andE₂ andE₁) andI
 
-def BTheorem.dni : BTheorem (p ⊃ ~~p) := BTheorem.cp BTheorem.taut 
+def BTheorem.dni : BTheorem (p ⊃ ~~p) := cp taut 
 
 def BTheorem.distRight : BTheorem ((q ¦ r) & p ⊃ (q & p) ¦ (r & p)) :=
-  have l₁ : BTheorem ((q ¦ r) & p ⊃ (p & q) ¦ (p & r)) := BTheorem.transitivity BTheorem.commAnd BTheorem.dist
-  have l₂ : BTheorem ((p & q) ¦ (p & r) ⊃ (q & p) ¦ (r & p)) := BTheorem.mp 
-     (BTheorem.adj (BTheorem.transitivity BTheorem.commAnd BTheorem.orI₁) (BTheorem.transitivity BTheorem.commAnd BTheorem.orI₂))
-     BTheorem.orE
-  BTheorem.transitivity l₁ l₂
+  have l₁ : BTheorem ((q ¦ r) & p ⊃ (p & q) ¦ (p & r)) := transitivity commAnd dist
+  have l₂ : BTheorem ((p & q) ¦ (p & r) ⊃ (q & p) ¦ (r & p)) := mp 
+     (adj (transitivity commAnd orI₁) (transitivity commAnd orI₂))
+     orE
+  transitivity l₁ l₂
 
 def BTheorem.demorgansLaw1 : BTheorem ((p & q) ⊃ ~(~p ¦ ~q)) := 
   have l₁ : ∀{r : Form}, BTheorem (r ⊃ ~~r) := cp taut
@@ -76,16 +76,12 @@ def BTheorem.demorgansLaw4 : BTheorem ((~p & ~q) ⊃ ~(p ¦ q)) :=
   cp (mp (adj l₁ l₂) orE)
 
 def BTheorem.orFunctor (thm₁ : BTheorem (p ⊃ q)) (thm₂ : BTheorem (r ⊃ s)) : BTheorem (p ¦ r ⊃ q ¦ s) := 
-      (BTheorem.mp 
-      (BTheorem.adj 
-        (BTheorem.transitivity thm₁ BTheorem.orI₁) 
-        (BTheorem.transitivity thm₂ BTheorem.orI₂)
-      ) BTheorem.orE)
+      mp (adj (transitivity thm₁ orI₁) (transitivity thm₂ orI₂)) BTheorem.orE
 
 def BTheorem.fromProof { p q : Form } : BProof {p} q → BTheorem (p ⊃ q)
-  | BProof.ax h => by rw [h]; exact taut
-  | BProof.adj h₁ h₂ => mp (adj (fromProof h₁) (fromProof h₂)) andI
-  | BProof.mp h₁ h₂ => transitivity (fromProof h₁) h₂
+  | .ax h => by rw [h]; exact taut
+  | .adj h₁ h₂ => mp (adj (fromProof h₁) (fromProof h₂)) andI
+  | .mp h₁ h₂ => transitivity (fromProof h₁) h₂
 
 def BTheorem.toProof { p q : Form } (h₁ : BTheorem (p ⊃ q)) : BProof {p} q := 
   BProof.mp (BProof.ax rfl) h₁
