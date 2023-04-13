@@ -28,8 +28,8 @@ theorem primeAnalysis : ∀t : Th, t.val = Set.interₛ { p | isPrimeTheory p �
         case inr h₄ =>
           have ⟨prf₁⟩ := ih₁ h₄.left
           have ⟨prf₂⟩ := ih₂ h₄.right
-          have thm₁ := BTheorem.mp (BTheorem.adj (BTheorem.fromProof prf₁) (BTheorem.fromProof prf₂)) BTheorem.orE
-          exact ⟨BTheorem.toProof thm₁⟩
+          have thm₁ := BTheorem.mp (BTheorem.adj prf₁.toTheorem prf₂.toTheorem) BTheorem.orE
+          exact ⟨thm₁.toProof ⟩
       all_goals
         cases h₃; exact ⟨BProof.ax rfl⟩
     have l₂ : ↑t ∩ generatedDisjunctions x = ∅ := by
@@ -86,7 +86,7 @@ theorem appBoundingFormalApplication : ∀t u : Th, ∀p : Pr, formalApplication
           (BProof.mp prf₂ (BTheorem.hs BTheorem.taut BTheorem.orI₂))
           (BTheorem.hs BTheorem.andE₂ BTheorem.taut)
         have prf₅ : BProof {P ¦ Q} (S & U ⊃ R ¦ T) := BTheorem.toProof $
-          BTheorem.mp (BTheorem.adj (BTheorem.fromProof prf₃) (BTheorem.fromProof prf₄)) BTheorem.orE
+          BTheorem.mp (BTheorem.adj prf₃.toTheorem prf₄.toTheorem) BTheorem.orE
         clear prf₁ prf₂ prf₃ prf₄
         have l₁₄ : S & U ∈ u := u.property.mpr ⟨BProof.adj (BProof.ax l₆) (BProof.ax l₁₀)⟩
         exact ⟨S & U, l₁₄, ⟨prf₅⟩⟩
@@ -122,7 +122,7 @@ theorem appBoundingFormalApplication : ∀t u : Th, ∀p : Pr, formalApplication
         apply l₁₃
         apply h₂
         clear l₈ l₁₂ l₁₃ h₂
-        have l₁₄ : S¦U ∈ ▲{P¦Q} := ⟨BTheorem.toProof (BTheorem.orFunctor (BTheorem.fromProof prf₁) (BTheorem.fromProof prf₂))⟩
+        have l₁₄ : S¦U ∈ ▲{P¦Q} := ⟨(BTheorem.orFunctor prf₁.toTheorem prf₂.toTheorem).toProof⟩
         have l₁₅ : (S¦U ⊃ R¦T) ∈ t := t.property.mpr ⟨BProof.mp (BProof.adj 
           (BProof.mp (BProof.ax l₆) (BTheorem.hs BTheorem.taut BTheorem.orI₁))
           (BProof.mp (BProof.ax l₁₀) (BTheorem.hs BTheorem.taut BTheorem.orI₂)))
@@ -224,7 +224,7 @@ theorem canonicalSatisfaction : ∀{t : Th}, ∀{f : Form}, t ⊨ f ↔ f ∈ t.
       intros h₃
       have ⟨q,⟨prf₁⟩,l₂⟩ := h₃
       have ⟨prf₂⟩ := t.property.mp l₂
-      have prf₃ := BProof.mp prf₂ (BTheorem.hs (BTheorem.fromProof prf₁) BTheorem.taut)
+      have prf₃ := BProof.mp prf₂ (BTheorem.hs prf₁.toTheorem BTheorem.taut)
       exact h₂ $ t.property.mpr ⟨prf₃⟩
     have l₂ : Δ ⊨ f := canonicalSatisfaction.mpr ⟨BProof.ax rfl⟩
     exact l₁ $ canonicalSatisfaction.mp (h₁ l₂)

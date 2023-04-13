@@ -28,62 +28,57 @@ infix:128 "⊢" => BProvable
 
 section
 
-open BTheorem
+namespace BTheorem
 
 variable {p q r s : Form} 
 
-def BTheorem.transitivity (h₁ : BTheorem (p ⊃ q)) (h₂ : BTheorem (q ⊃ r)) : BTheorem (p ⊃ r) :=
+def transitivity (h₁ : BTheorem (p ⊃ q)) (h₂ : BTheorem (q ⊃ r)) : BTheorem (p ⊃ r) :=
   mp taut (hs h₁ h₂) 
 
-def BTheorem.transitivityLeft (h : BTheorem (p ⊃ q)) : BTheorem ((q ⊃ r) ⊃ (p ⊃ r)) :=
+def transitivityLeft (h : BTheorem (p ⊃ q)) : BTheorem ((q ⊃ r) ⊃ (p ⊃ r)) :=
   hs h taut
   
-def BTheorem.transitivityRight (h : BTheorem (p ⊃ q)) : BTheorem ((r ⊃ p) ⊃ (r ⊃ q)) :=
+def transitivityRight (h : BTheorem (p ⊃ q)) : BTheorem ((r ⊃ p) ⊃ (r ⊃ q)) :=
   hs taut h
 
-def BTheorem.commAnd : BTheorem (q & p ⊃ p & q) :=
+def commAnd : BTheorem (q & p ⊃ p & q) :=
   mp (BTheorem.adj andE₂ andE₁) andI
 
-def BTheorem.dni : BTheorem (p ⊃ ~~p) := cp taut 
+def dni : BTheorem (p ⊃ ~~p) := cp taut 
 
-def BTheorem.distRight : BTheorem ((q ¦ r) & p ⊃ (q & p) ¦ (r & p)) :=
+def distRight : BTheorem ((q ¦ r) & p ⊃ (q & p) ¦ (r & p)) :=
   have l₁ : BTheorem ((q ¦ r) & p ⊃ (p & q) ¦ (p & r)) := transitivity commAnd dist
   have l₂ : BTheorem ((p & q) ¦ (p & r) ⊃ (q & p) ¦ (r & p)) := mp 
      (adj (transitivity commAnd orI₁) (transitivity commAnd orI₂))
      orE
   transitivity l₁ l₂
 
-def BTheorem.demorgansLaw1 : BTheorem ((p & q) ⊃ ~(~p ¦ ~q)) := 
+def demorgansLaw1 : BTheorem ((p & q) ⊃ ~(~p ¦ ~q)) := 
   have l₁ : ∀{r : Form}, BTheorem (r ⊃ ~~r) := cp taut
   have l₂ : BTheorem (~p ⊃ ~(p & q)) := cp $ mp taut (hs andE₁ l₁)
   have l₃ : BTheorem (~q ⊃ ~(p & q)) := cp $ mp taut (hs andE₂ l₁)
   cp $ mp (adj l₂ l₃) orE
 
-def BTheorem.demorgansLaw2 : BTheorem (~(~p ¦ ~q) ⊃ (p & q)) := 
+def demorgansLaw2 : BTheorem (~(~p ¦ ~q) ⊃ (p & q)) := 
   have l₁ : BTheorem (~p ⊃ ~~(~p ¦ ~q)) := transitivity orI₁ (cp taut)
   have l₂ : BTheorem (~(~p ¦ ~q) ⊃ p ) := transitivity (cp l₁) dne
   have l₃ : BTheorem (~q ⊃ ~~(~p ¦ ~q)) := transitivity orI₂ (cp taut)
   have l₄ : BTheorem (~(~p ¦ ~q) ⊃ q ) := transitivity (cp l₃) dne
   mp (adj l₂ l₄) andI
 
-def BTheorem.demorgansLaw3 : BTheorem (~(p & q) ⊃ (~p ¦ ~q)) := 
+def demorgansLaw3 : BTheorem (~(p & q) ⊃ (~p ¦ ~q)) := 
   have l₁ : BTheorem (~(~p ¦ ~q) ⊃ ~~(p & q)):= transitivity demorgansLaw2 (cp taut)
   transitivity (cp l₁) dne
 
-def BTheorem.demorgansLaw4 : BTheorem ((~p & ~q) ⊃ ~(p ¦ q)) := 
+def demorgansLaw4 : BTheorem ((~p & ~q) ⊃ ~(p ¦ q)) := 
   have l₁ : BTheorem (p ⊃ ~(~p & ~q)) := cp andE₁
   have l₂ : BTheorem (q ⊃ ~(~p & ~q)) := cp andE₂
   cp (mp (adj l₁ l₂) orE)
 
-def BTheorem.orFunctor (thm₁ : BTheorem (p ⊃ q)) (thm₂ : BTheorem (r ⊃ s)) : BTheorem (p ¦ r ⊃ q ¦ s) := 
+def orFunctor (thm₁ : BTheorem (p ⊃ q)) (thm₂ : BTheorem (r ⊃ s)) : BTheorem (p ¦ r ⊃ q ¦ s) := 
       mp (adj (transitivity thm₁ orI₁) (transitivity thm₂ orI₂)) BTheorem.orE
 
-def BTheorem.fromProof { p q : Form } : BProof {p} q → BTheorem (p ⊃ q)
-  | .ax h => by rw [h]; exact taut
-  | .adj h₁ h₂ => mp (adj (fromProof h₁) (fromProof h₂)) andI
-  | .mp h₁ h₂ => transitivity (fromProof h₁) h₂
-
-def BTheorem.toProof { p q : Form } (h₁ : BTheorem (p ⊃ q)) : BProof {p} q := 
+def toProof { p q : Form } (h₁ : BTheorem (p ⊃ q)) : BProof {p} q := 
   BProof.mp (BProof.ax rfl) h₁
 
 example : BTheorem ((p ⊃ q) ⊃ (p ⊃ (q ¦ r))) :=
@@ -92,7 +87,12 @@ example : BTheorem ((p ⊃ q) ⊃ (p ⊃ (q ¦ r))) :=
 example : BTheorem ((p ⊃ q) ⊃ (p & r ⊃ q)) :=
   hs andE₁ taut
 
+end BTheorem
 
+def BProof.toTheorem { p q : Form } : BProof {p} q → BTheorem (p ⊃ q)
+  | .ax h => by rw [h]; exact BTheorem.taut
+  | .adj h₁ h₂ => BTheorem.mp (BTheorem.adj (h₁.toTheorem) (h₂.toTheorem)) BTheorem.andI
+  | .mp h₁ h₂ => BTheorem.transitivity (h₁.toTheorem) h₂
 
 def BProof.monotone { f : Form } { Γ : Ctx } { Δ : Ctx } (mono: Γ ⊆ Δ ) : BProof Γ f → BProof Δ f
   | ax h₁ => ax (mono h₁)
@@ -102,10 +102,10 @@ def BProof.monotone { f : Form } { Γ : Ctx } { Δ : Ctx } (mono: Γ ⊆ Δ ) : 
 def BProof.adjoinPremises { p q r : Form } : BProof {p,q} r → BProof {p & q} r
   | ax h => if c₁ : r = p then by
               rw [c₁]
-              exact mp (ax rfl : BProof {p&q} (p&q)) andE₁
+              exact mp (ax rfl : BProof {p&q} (p&q)) BTheorem.andE₁
             else if c₂ : r = q then by
               rw [c₂]
-              exact mp (ax rfl : BProof {p&q} (p&q)) andE₂
+              exact mp (ax rfl : BProof {p&q} (p&q)) BTheorem.andE₂
             else False.elim (Or.elim h c₁ c₂)
   | mp h₁ h₂ => mp (adjoinPremises h₁) h₂
   | adj h₁ h₂ => adj (adjoinPremises h₁) (adjoinPremises h₂)
@@ -155,11 +155,11 @@ def BProof.proveFromList { l : List Form } { f : Form } : g ∈ f :: l → BProo
         cases tail
         case nil => 
           have prf₂ : BProof {Form.conjoinList f [head]} f := BProof.mp (BProof.ax rfl) BTheorem.andE₁
-          exact BProof.mp prf₂ (BTheorem.fromProof prf₁)
+          exact BProof.mp prf₂ (prf₁.toTheorem)
         case cons head' tail' =>
           have prf₂ : BProof {Form.conjoinList f (head :: head' :: tail')} (Form.conjoinList f (head' :: tail')) := by
             exact BProof.adj (BProof.mp (BProof.ax rfl) BTheorem.andE₁) (BProof.mp (BProof.mp (BProof.ax rfl) BTheorem.andE₂) BTheorem.andE₂)
-          exact BProof.mp prf₂ (BTheorem.fromProof prf₁)
+          exact BProof.mp prf₂ (prf₁.toTheorem)
       case isTrue h₂ =>
         rw [h₂]
         cases tail

@@ -230,8 +230,8 @@ theorem lindenbaumAvoids { t : Th } { Δ : Ctx } ( h₁ : ↑t ∩ Δ = ∅ ) ( 
           clear l₁ l₂ l₄ h₅
           have ⟨lst₁,l₆,prf₃⟩ := BProof.sentenceCompactness (Set.union_singleton ▸ prf₁)
           have ⟨lst₂,l₇,prf₄⟩ := BProof.sentenceCompactness (Set.union_singleton ▸ prf₂)
-          have thm₁ := BTheorem.transitivity (BTheorem.fromProof prf₃) (BTheorem.orI₁ : BTheorem (w₁ ⊃ w₁ ¦ w₂))
-          have thm₂ := BTheorem.transitivity (BTheorem.fromProof prf₄) (BTheorem.orI₂ : BTheorem (w₂ ⊃ w₁ ¦ w₂))
+          have thm₁ := BTheorem.transitivity prf₃.toTheorem (BTheorem.orI₁ : BTheorem (w₁ ⊃ w₁ ¦ w₂))
+          have thm₂ := BTheorem.transitivity prf₄.toTheorem (BTheorem.orI₂ : BTheorem (w₂ ⊃ w₁ ¦ w₂))
           have thm₃ := BTheorem.mp (BTheorem.adj thm₂ thm₁) BTheorem.orE 
           have ⟨prf₅⟩ := h₄
           clear h₄ thm₁ thm₂ prf₁ prf₂ prf₃ prf₄

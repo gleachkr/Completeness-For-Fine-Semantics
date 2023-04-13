@@ -45,10 +45,10 @@ def FormalDual (Γ : Ctx) : Ctx :=
 lemma generatedDisjunction {f g h: Form} : f ∈ ▲{g} ∧ f ∈ ▲{h} → f ∈ ▲{g ¦ h} := by
   intros h₁
   have ⟨⟨prf₁⟩,⟨prf₂⟩⟩ := h₁
-  have l₁ := BTheorem.fromProof prf₁
-  have l₂ := BTheorem.fromProof prf₂
+  have l₁ := prf₁.toTheorem
+  have l₂ := prf₂.toTheorem
   have l₃ := (BTheorem.mp (BTheorem.adj l₁ l₂) BTheorem.orE)
-  exact ⟨BTheorem.toProof l₃⟩
+  exact ⟨l₃.toProof⟩
 
 lemma generatedContained {Γ : Ctx } { Δ : Th } : Γ ⊆ Δ → ▲Γ ⊆ Δ := by
   intros h₁ f h₂
