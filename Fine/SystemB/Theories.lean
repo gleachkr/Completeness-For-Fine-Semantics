@@ -18,17 +18,21 @@ theorem generatedFormal : ∀Γ : Ctx, formalTheory (▲Γ) := by
    unfold formalTheory
    intros Γ f
    apply Iff.intro
-   · intros h₁
-     exact Nonempty.intro $ BProof.ax h₁
-   · intros h₁; cases h₁; rename_i w; induction w
-     case intro.ax => assumption
-     case intro.mp _ _ _ h₂ ih => 
-       have ⟨prf⟩ := ih
-       exact ⟨BProof.mp prf h₂⟩
-     case intro.adj ih₁ ih₂ => 
-       have ⟨prf₁⟩ := ih₁
-       have ⟨prf₂⟩ := ih₂
-       exact ⟨BProof.adj prf₁ prf₂⟩
+   case mp => 
+      intros h₁
+      exact Nonempty.intro $ BProof.ax h₁
+   case mpr =>
+     intros h₁  
+     have ⟨w⟩ := h₁
+     induction w
+     case ax => assumption
+     case mp P Q prf thm ih => 
+       have ⟨prf₂⟩ := ih ⟨prf⟩
+       exact ⟨BProof.mp prf₂ thm⟩
+     case adj P Q prf₁ prf₂ ih₁ ih₂ => 
+       have ⟨prf₃⟩ := ih₁ ⟨prf₁⟩
+       have ⟨prf₄⟩ := ih₂ ⟨prf₂⟩
+       exact ⟨BProof.adj prf₃ prf₄⟩
 
 def isDisjunctionClosed (Γ : Ctx) := ∀{f g : Form}, f ∈ Γ ∧ g ∈ Γ → f ¦ g ∈ Γ
 
@@ -78,7 +82,6 @@ lemma formalFixed {Γ : Ctx} : formalTheory Γ → ▲Γ = Γ := by
       exact h₁.mp a
 
 lemma BisFormal : formalTheory BTheory := by
-  unfold formalTheory
   intros f
   apply Iff.intro
   · intro a
@@ -101,16 +104,12 @@ abbrev BTh : Th := ⟨BTheory, BisFormal⟩
 def formalApplication (Γ : Ctx) (Δ : Ctx) : Ctx := λf : Form => ∃g : Form, g ∈ Δ ∧ (g ⊃ f) ∈ Γ
 
 theorem formalAppMonotoneLeft : ∀Γ : Ctx, Monotone (formalApplication Γ) := by
-  intros Γ
-  unfold Monotone
-  intros a b h₁ A h₂
+  intros Γ a b h₁ A h₂
   have ⟨g,h₃⟩ := h₂
   exact ⟨g, h₁ h₃.left, h₃.right⟩
 
 theorem formalAppMonotoneRight : ∀Γ : Ctx, Monotone (flip formalApplication Γ) := by
-  intros Γ
-  unfold Monotone
-  intros a b h₁ A h₂
+  intros Γ a b h₁ A h₂
   have ⟨g,h₃⟩ := h₂
   exact ⟨g, h₃.left, h₁ h₃.right⟩
 
@@ -119,7 +118,6 @@ theorem formalAppMonotoneRight : ∀Γ : Ctx, Monotone (flip formalApplication �
   
 def formalApplicationFunction : Th → Th → Th
   | ⟨Δ, h₁⟩, ⟨Γ, h₂⟩ => by
-    unfold Th; unfold formalTheory
     apply Subtype.mk
     case val => exact formalApplication Δ Γ
     case property =>
@@ -173,7 +171,6 @@ theorem formalAppIdentLeft : ∀Γ : Th, formalApplicationFunction BTh Γ = Γ :
     exact ⟨f, h₁, ⟨BTheorem.taut⟩⟩
 
 theorem formalStarFormal (Γ : Ctx) (h₁: formalTheory Γ) (h₂ : isPrimeTheory Γ) : formalTheory (FormalDual Γ) := by
-  unfold formalTheory
   intros F
   apply Iff.intro <;> intros h₃ <;> unfold FormalDual
   case mp => exact ⟨BProof.ax h₃⟩
